@@ -7,6 +7,7 @@ CREATE TABLE municipalities (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
   slug TEXT UNIQUE NOT NULL,
+  emblem_url TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 

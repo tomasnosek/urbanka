@@ -6,6 +6,7 @@ export interface Municipality {
     id: string;
     name: string;
     slug: string;
+    emblem_url: string | null;
     created_at: string;
 }
 

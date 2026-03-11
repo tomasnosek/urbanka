@@ -41,31 +41,38 @@ export async function generateMetadata(
         };
     }
 
-    const { project } = result;
+    const { project, municipality } = result;
+    const municipalityName = municipality.name;
     const heroBlock = project.content.blocks.find((b: any) => b.type === "hero");
 
     // Fallbacks
     const title = heroBlock?.data?.title || project.title;
-    const description = heroBlock?.data?.lead || `Informace o projektu ${project.title}`;
-    const imageUrl = heroBlock?.data?.imageUrl;
-
-    const previousImages = (await parent).openGraph?.images || [];
-    const images = imageUrl ? [imageUrl, ...previousImages] : previousImages;
+    const description = heroBlock?.data?.lead || `Detailní informace o projektu ${project.title} v obci ${municipalityName}.`;
+    
+    // Dynamic OG Image URL (Next.js identifies opengraph-image.tsx automatically, but we set it here too)
+    const ogImageUrl = `/${municipalitySlug}/${projectSlug}/opengraph-image`;
 
     return {
-        title: `${title} | Urbanka`,
+        title: `${title} | ${municipalityName} | Urbanka`,
         description: description,
         openGraph: {
             title: title,
             description: description,
-            images: images,
+            images: [
+                {
+                    url: ogImageUrl,
+                    width: 1200,
+                    height: 630,
+                    alt: title,
+                },
+            ],
             type: "article",
         },
         twitter: {
             card: "summary_large_image",
-            title: title,
+            title: `${title} | ${municipalityName}`,
             description: description,
-            images: images,
+            images: [ogImageUrl],
         },
     };
 }

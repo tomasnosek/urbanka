@@ -20,10 +20,11 @@ export default async function MunicipalitiesPage() {
         `)
         .order("name", { ascending: true });
 
-    // Server action to add municipality
+        // Server action to add municipality
     async function createMunicipality(formData: FormData) {
         "use server";
         const name = formData.get("name") as string;
+        const emblem_url = formData.get("emblem_url") as string | null;
         const supabaseAdmin = await createServerSupabase();
 
         // Simple slug generation
@@ -34,7 +35,7 @@ export default async function MunicipalitiesPage() {
             .replace(/[^a-z0-9]+/g, "-")
             .replace(/^-+|-+$/g, "");
 
-        await supabaseAdmin.from("municipalities").insert({ name, slug });
+        await supabaseAdmin.from("municipalities").insert({ name, slug, emblem_url: emblem_url || null });
         revalidatePath("/admin/municipalities");
     }
 
@@ -53,6 +54,18 @@ export default async function MunicipalitiesPage() {
                         name="name"
                         placeholder="Název obce (např. Lužice)"
                         required
+                        style={{
+                            flex: 1,
+                            padding: "var(--space-2)",
+                            border: "var(--border)",
+                            borderRadius: "var(--radius)",
+                            fontFamily: "var(--font-sans)",
+                        }}
+                    />
+                    <input
+                        type="url"
+                        name="emblem_url"
+                        placeholder="Znak URL (např. https://.../logo.png)"
                         style={{
                             flex: 1,
                             padding: "var(--space-2)",
