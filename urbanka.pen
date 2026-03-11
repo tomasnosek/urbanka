@@ -1,0 +1,102 @@
+{
+  "version": "2.8",
+  "children": [
+    {
+      "type": "frame",
+      "id": "bi8Au",
+      "x": 0,
+      "y": 0,
+      "name": "content-img-right",
+      "clip": true,
+      "width": 1600,
+      "fill": "#FFFFFF",
+      "layout": "vertical",
+      "padding": [
+        160,
+        0
+      ],
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "JDf94",
+          "name": "Frame 2",
+          "clip": true,
+          "width": 1200,
+          "fill": "#FFFFFF",
+          "gap": 96,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "LLduR",
+              "name": "Frame 1",
+              "clip": true,
+              "width": 471,
+              "fill": "#FFFFFF",
+              "layout": "vertical",
+              "gap": 24,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "ei6sa",
+                  "name": "H2",
+                  "fill": "#701417",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Financování a harmonogram",
+                  "lineHeight": 1.1,
+                  "fontFamily": "Ranade",
+                  "fontSize": 48,
+                  "fontWeight": "500",
+                  "letterSpacing": -1.44
+                },
+                {
+                  "type": "text",
+                  "id": "szyEn",
+                  "name": "Regular",
+                  "fill": "#000000",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Projekt je z 75 % financován z dotace Evropské unie prostřednictvím Integrovaného regionálního operačního programu (IROP). Zbývajících 25 % hradí obec z vlastních zdrojů. Stavba byla zahájena v březnu 2024, předpokládané dokončení je červen 2025. V současnosti probíhají hrubé stavební práce na interiéru.",
+                  "lineHeight": 1.5,
+                  "fontFamily": "Inter",
+                  "fontSize": 17,
+                  "fontWeight": "500",
+                  "letterSpacing": -0.17
+                }
+              ]
+            },
+            {
+              "type": "rectangle",
+              "id": "6XEET",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "./image.png",
+                "mode": "fill"
+              },
+              "width": "fill_container",
+              "height": 600
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "white": {
+      "type": "color",
+      "value": "#FFFFFF"
+    }
+  },
+  "fonts": [
+    {
+      "name": "Ranade",
+      "url": "Ranade-Medium.otf",
+      "weight": 500
+    }
+  ]
+}

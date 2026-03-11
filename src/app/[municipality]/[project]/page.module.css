@@ -1,0 +1,12 @@
+.page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.main {
+    flex: 1;
+    width: var(--wrapper-width);
+    max-width: var(--wrapper-max-width);
+    margin: 0 auto;
+}

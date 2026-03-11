@@ -1,0 +1,146 @@
+.statsBar {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    border: var(--border);
+    border-radius: var(--radius);
+    background-color: var(--color-surface);
+    margin-bottom: var(--space-16);
+}
+
+@media (min-width: 768px) {
+    .statsBar {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.statItem {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-5) var(--space-6);
+    border-bottom: var(--border);
+}
+
+@media (min-width: 768px) {
+    .statItem {
+        border-bottom: none;
+        border-right: var(--border);
+    }
+
+    .statItem:last-child {
+        border-right: none;
+    }
+}
+
+.statLabel {
+    font-size: var(--text-xs);
+    font-weight: var(--font-medium);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.statValue {
+    font-size: var(--text-base);
+    font-weight: var(--font-semibold);
+    color: var(--color-text);
+}
+
+/* --- Edit Mode Enhancements --- */
+.statItemEditable {
+    position: relative;
+    padding-right: var(--space-8);
+    /* Make room for the delete button */
+}
+
+.removeStatBtn {
+    position: absolute;
+    top: var(--space-4);
+    right: var(--space-4);
+    width: 24px;
+    height: 24px;
+    border-radius: 12px;
+    background: #e63946;
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    cursor: pointer;
+    opacity: 0;
+    transition: all var(--transition-fast);
+}
+
+.statItemEditable:hover .removeStatBtn {
+    opacity: 1;
+}
+
+.removeStatBtn:hover {
+    background: #f05a66;
+    transform: scale(1.1);
+}
+
+.addStatWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-4);
+    background: rgba(132, 169, 140, 0.05);
+    /* very light sage */
+    border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.addStatBtn {
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--color-sage-dark, #52796F);
+    background: transparent;
+    border: 1px dashed var(--color-sage-border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.addStatBtn:hover {
+    background: var(--color-sage-light);
+    border-color: var(--color-sage);
+}
+
+.dropdownMenu {
+    position: absolute;
+    top: calc(100% + var(--space-2));
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-surface);
+    border: var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    min-width: 200px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.dropdownItem {
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-sm);
+    color: var(--color-text);
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+
+.dropdownItem:hover {
+    background-color: var(--color-slate-50);
+}
+
+.dropdownItem:not(:last-child) {
+    border-bottom: var(--border);
+}

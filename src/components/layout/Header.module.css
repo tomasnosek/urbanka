@@ -1,0 +1,55 @@
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    border-bottom: var(--border);
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+}
+
+.headerInner {
+    width: var(--wrapper-width);
+    max-width: var(--wrapper-max-width);
+    margin: 0 auto;
+    padding: var(--space-4) var(--wrapper-padding);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.logoMark {
+    width: 16px;
+    height: 16px;
+    border-radius: var(--radius);
+    background-color: var(--color-sage);
+}
+
+.logoText {
+    font-weight: var(--font-semibold);
+    color: var(--color-text);
+    letter-spacing: -0.02em;
+    font-size: var(--text-base);
+}
+
+.nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+}
+
+.navLink {
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--color-text-muted);
+    transition: color var(--transition-base);
+}
+
+.navLink:hover {
+    color: var(--color-text);
+}

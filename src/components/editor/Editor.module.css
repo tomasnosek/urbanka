@@ -1,0 +1,319 @@
+/* =============================================
+   URBANKA — Editor Styles
+   ============================================= */
+
+/* --- Editable text hover indicator --- */
+.editable {
+    outline: 2px dashed transparent;
+    outline-offset: 2px;
+    transition: outline-color var(--transition-fast);
+    cursor: text;
+    border-radius: var(--radius);
+}
+
+.editable:hover {
+    outline-color: var(--color-sage-border);
+}
+
+.editable:focus {
+    outline-color: var(--color-sage);
+    outline-style: solid;
+    background: rgba(132, 169, 140, 0.04);
+}
+
+/* --- Editable image overlay --- */
+.editableImageWrapper {
+    position: relative;
+    cursor: pointer;
+}
+
+.imageOverlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    align-items: center;
+    justify-content: center;
+    background: rgba(47, 62, 70, 0.5);
+    opacity: 0;
+    transition: opacity var(--transition-base);
+    border-radius: var(--radius);
+    pointer-events: none;
+}
+
+.editableImageWrapper:hover .imageOverlay {
+    opacity: 1;
+}
+
+.overlayText {
+    color: white;
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    padding: var(--space-2) var(--space-4);
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: var(--radius);
+}
+
+.overlayActionBtn {
+    height: 32px;
+    padding: 0 var(--space-4);
+    border-radius: 16px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    pointer-events: auto;
+}
+
+.overlayActionBtn:hover {
+    background: rgba(0, 0, 0, 0.8);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.hiddenInput {
+    display: none;
+}
+
+/* --- Admin Toolbar --- */
+.toolbar {
+    position: fixed;
+    top: var(--space-4);
+    right: var(--space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-4);
+    background: var(--color-slate-900);
+    border-radius: var(--radius);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+    z-index: 9999;
+}
+
+.toolbarLabel {
+    font-size: var(--text-xs);
+    color: var(--color-slate-400);
+    font-weight: var(--font-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.toolbarButton {
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: white;
+    background: transparent;
+    border: 1px solid var(--color-slate-700);
+    border-radius: var(--radius);
+    padding: var(--space-1) var(--space-3);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+}
+
+.toolbarButton:hover {
+    background: var(--color-slate-800);
+}
+
+.toolbarButtonActive {
+    background: var(--color-sage);
+    border-color: var(--color-sage);
+}
+
+.toolbarButtonActive:hover {
+    background: var(--color-sage-dark);
+}
+
+.dropdownMenu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: var(--space-2);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    min-width: 200px;
+    z-index: 10000;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.dropdownItem {
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-sm);
+    color: var(--color-text);
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+
+.dropdownItem:hover {
+    background-color: var(--color-bg-subtle);
+}
+
+.dropdownItem:not(:last-child) {
+    border-bottom: 1px solid var(--color-border);
+}
+
+/* --- Admin Dock --- */
+.dock {
+    position: fixed;
+    bottom: var(--space-6);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    z-index: 9998;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+
+.dockItem {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: var(--space-2);
+    border-radius: var(--radius);
+    transition: all var(--transition-base);
+    min-width: 80px;
+}
+
+.dockItem:hover {
+    background: rgba(0, 0, 0, 0.04);
+    transform: translateY(-4px);
+}
+
+.dockItem:active {
+    transform: translateY(0);
+}
+
+.dockIcon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius);
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    border: 1px solid var(--color-border);
+}
+
+.dockLabel {
+    font-size: var(--text-xs);
+    font-weight: var(--font-medium);
+    color: var(--color-text-secondary);
+}
+
+/* --- Delete image button --- */
+.deleteImageBtn {
+    height: 32px;
+    padding: 0 var(--space-4);
+    border-radius: 16px;
+    background: #e63946;
+    color: white;
+    border: 1px solid #e63946;
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    z-index: 10;
+    pointer-events: auto;
+}
+
+.deleteImageBtn:hover {
+    background: #f05a66;
+    border-color: #f05a66;
+}
+
+/* --- Delete Section Button --- */
+.sectionWrapper {
+    position: relative;
+    border-radius: var(--radius);
+    transition: all var(--transition-fast);
+}
+
+.sectionWrapper:hover {
+    outline: 2px dashed var(--color-sage-border);
+    outline-offset: 4px;
+}
+
+.deleteSectionBtn {
+    position: absolute;
+    top: -16px;
+    right: 16px;
+    height: 32px;
+    padding: 0 var(--space-4);
+    border-radius: 16px;
+    background: #e63946;
+    color: white;
+    border: none;
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity var(--transition-fast), transform var(--transition-fast), background-color var(--transition-fast);
+    z-index: 50;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.sectionWrapper:hover .deleteSectionBtn {
+    opacity: 1;
+}
+
+.deleteSectionBtn:hover {
+    transform: scale(1.05);
+    background: #f05a66;
+}
+
+/* --- Empty Placeholder Pattern --- */
+.emptyPlaceholderWrapper {
+    background: repeating-linear-gradient(45deg,
+            var(--color-slate-100),
+            var(--color-slate-100) 10px,
+            var(--color-slate-200) 10px,
+            var(--color-slate-200) 20px);
+    border-radius: var(--radius);
+    min-height: 200px;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+}
+
+.emptyPlaceholderImage {
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}

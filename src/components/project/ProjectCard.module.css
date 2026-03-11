@@ -1,0 +1,198 @@
+.cardWrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s ease;
+    border: 1px solid var(--color-border);
+    flex: 1;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+}
+
+.cardImage {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: #f0f0f0;
+}
+
+.cardImage img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cardBody {
+    padding: var(--spacing-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+    flex: 1;
+}
+
+.cardStatus {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    font-size: var(--font-size-xs);
+    font-family: var(--font-sans);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+}
+
+.cardStatusDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ccc;
+}
+
+.cardStatusDot[data-status="published"] {
+    background: var(--color-primary);
+}
+
+.cardStatusDot[data-status="draft"] {
+    background: var(--color-secondary);
+}
+
+.cardTitle {
+    font-family: var(--font-serif);
+    font-size: var(--font-size-xl);
+    line-height: 1.2;
+    margin: 0;
+    color: var(--color-text);
+}
+
+.cardLead {
+    font-family: var(--font-sans);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    flex: 1;
+    margin: 0;
+}
+
+.cardMeta {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-sans);
+    font-size: var(--font-size-sm);
+    color: var(--color-primary);
+    font-weight: 500;
+    margin-top: var(--spacing-4);
+    padding-top: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+}
+
+/* Edit Overlay */
+.editOverlay {
+    position: absolute;
+    top: var(--spacing-4);
+    right: var(--spacing-4);
+    display: flex;
+    gap: var(--spacing-2);
+    align-items: center;
+    z-index: 10;
+}
+
+/* Apple-style Switch */
+.switchContainer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 6px 12px;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.switchLabel {
+    font-size: 11px;
+    font-family: var(--font-sans);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    transition: color 0.2s;
+    user-select: none;
+}
+
+.switchLabel[data-active="true"] {
+    color: var(--color-text);
+}
+
+.switchTrack {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.switchTrack[data-published="true"] {
+    background: var(--color-primary);
+}
+
+.switchThumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.switchThumb[data-published="true"] {
+    transform: translateX(16px);
+}
+
+/* Delete Button */
+.deleteButton {
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--color-danger);
+    border: 1px solid rgba(255, 0, 0, 0.1);
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(10px);
+}
+
+.cardWrapper:hover .deleteButton {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+}
+
+.deleteButton:hover {
+    background: var(--color-danger);
+    color: white;
+    border-color: var(--color-danger);
+}

@@ -1,0 +1,212 @@
+.overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    padding: var(--space-4);
+}
+
+.modal {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 640px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-5) var(--space-6);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.title {
+    font-size: var(--text-xl);
+    font-weight: var(--font-semibold);
+    color: var(--color-text);
+}
+
+.closeButton {
+    background: transparent;
+    border: none;
+    font-size: 28px;
+    line-height: 1;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: color var(--transition-fast);
+}
+
+.closeButton:hover {
+    color: var(--color-crimson);
+}
+
+.body {
+    padding: var(--space-6);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+.dropzone {
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius);
+    padding: var(--space-8) var(--space-4);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    background-color: rgba(132, 169, 140, 0.02);
+}
+
+.dropzone:hover {
+    border-color: var(--color-sage);
+    background-color: rgba(132, 169, 140, 0.05);
+}
+
+.dropzoneIcon {
+    font-size: 40px;
+    margin-bottom: var(--space-3);
+    color: var(--color-sage);
+}
+
+.dropzoneText {
+    font-size: var(--text-base);
+    font-weight: var(--font-medium);
+    color: var(--color-text);
+    margin-bottom: var(--space-2);
+}
+
+.dropzoneSubtext {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    max-width: 400px;
+}
+
+.fileList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.fileListTitle {
+    font-size: var(--text-base);
+    font-weight: var(--font-medium);
+    color: var(--color-text);
+}
+
+.fileItem {
+    background-color: var(--color-bg-subtle);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.fileItemTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.fileName {
+    font-weight: var(--font-medium);
+    font-size: var(--text-sm);
+    color: var(--color-text);
+    word-break: break-all;
+    padding-right: var(--space-4);
+}
+
+.removeBtn {
+    background: transparent;
+    border: none;
+    color: var(--color-crimson);
+    font-size: var(--text-xs);
+    font-weight: var(--font-medium);
+    cursor: pointer;
+}
+
+.removeBtn:hover {
+    text-decoration: underline;
+}
+
+.commentInput {
+    width: 100%;
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    border-radius: var(--radius);
+    font-size: var(--text-sm);
+    font-family: inherit;
+    color: var(--color-text);
+    transition: border-color var(--transition-fast);
+}
+
+.commentInput:focus {
+    outline: none;
+    border-color: var(--color-sage);
+}
+
+.footer {
+    padding: var(--space-4) var(--space-6);
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-3);
+    background-color: var(--color-bg-subtle);
+}
+
+.cancelButton {
+    background: transparent;
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.cancelButton:hover {
+    background-color: var(--color-surface);
+    border-color: var(--color-text-muted);
+}
+
+.submitButton {
+    background: var(--color-sage);
+    border: none;
+    color: white;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+
+.submitButton:hover:not(:disabled) {
+    background-color: var(--color-sage-dark);
+}
+
+.submitButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

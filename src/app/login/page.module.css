@@ -1,0 +1,105 @@
+/* =============================================
+   URBANKA — Login Page Styles
+   ============================================= */
+
+.page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: var(--color-bg);
+}
+
+.card {
+    width: 100%;
+    max-width: 400px;
+    background: var(--color-surface);
+    border: var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-10);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: var(--space-8);
+}
+
+.logo {
+    font-size: var(--text-2xl);
+    color: var(--color-sage);
+    margin-bottom: var(--space-3);
+}
+
+.title {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-bold);
+    color: var(--color-text);
+    margin-bottom: var(--space-1);
+}
+
+.subtitle {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.label {
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    color: var(--color-text);
+}
+
+.input {
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-base);
+    color: var(--color-text);
+    background: var(--color-bg);
+    border: var(--border);
+    border-radius: var(--radius);
+    outline: none;
+    transition: border-color var(--transition-fast);
+}
+
+.input:focus {
+    border-color: var(--color-sage);
+}
+
+.error {
+    font-size: var(--text-sm);
+    color: #b91c1c;
+    text-align: center;
+}
+
+.button {
+    width: 100%;
+    padding: var(--space-3) var(--space-6);
+    font-size: var(--text-base);
+    font-weight: var(--font-medium);
+    color: white;
+    background: var(--color-slate-900);
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.button:hover {
+    background: var(--color-slate-800);
+}
+
+.button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
