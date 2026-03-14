@@ -1,5 +1,7 @@
 import { ImageResponse } from "next/og";
 import { createServerSupabase } from "@/lib/supabase-server";
+import { readFileSync } from "fs";
+import { join } from "path";
 
 // Revalidate this OG image every hour to keep it fresh
 export const revalidate = 3600;
@@ -13,10 +15,8 @@ export const size = {
 
 export const contentType = "image/png";
 
-// Load custom font (Ranade-Medium) from public folder
-const font = fetch(new URL("../../../../public/Ranade-Medium.otf", import.meta.url)).then((res) =>
-    res.arrayBuffer()
-);
+// Load custom font at build time using fs (fetch doesn't work during static generation)
+const fontData = readFileSync(join(process.cwd(), "public", "Ranade-Medium.otf"));
 
 export default async function Image({ params }: { params: { municipality: string; project: string } }) {
     try {
@@ -24,9 +24,6 @@ export default async function Image({ params }: { params: { municipality: string
 
         // Init Supabase
         const supabase = await createServerSupabase();
-
-        // Promise to load the font ahead of time for performance
-        const fontData = await font;
 
         // Fetch municipality & project data
         const { data: dbMunicipality } = await supabase
