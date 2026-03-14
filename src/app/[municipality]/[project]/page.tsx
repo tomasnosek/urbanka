@@ -9,6 +9,7 @@ import { ContentBlock } from "@/components/project/ContentBlock";
 import { Timeline } from "@/components/project/Timeline";
 import { ProjectNav } from "@/components/project/ProjectNav";
 import { FeedbackForm } from "@/components/project/FeedbackForm";
+import { Gallery } from "@/components/project/Gallery";
 import { EditorToolbar } from "@/components/editor/EditorToolbar";
 import { EditorDock } from "@/components/editor/EditorDock";
 import { SectionWrapper } from "@/components/editor/SectionWrapper";
@@ -105,7 +106,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             <Header municipalityName={municipality.name} />
             <main className={styles.main}>
                 {blocks.map((block: any, index: number) => (
-                    <SectionWrapper key={block.id} blockId={block.id} projectId={project.id} blockIndex={index}>
+                    <SectionWrapper key={block.id} blockId={block.id} projectId={project.id} blockIndex={index} totalBlocks={blocks.length}>
                         {block.type === "hero" && (
                             <HeroSection
                                 title={block.data.title}
@@ -136,6 +137,13 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                         {block.type === "timeline" && block.data?.length > 0 && (
                             <Timeline
                                 items={block.data}
+                                projectId={project.id}
+                                blockIndex={index}
+                            />
+                        )}
+                        {block.type === "gallery" && (
+                            <Gallery
+                                images={block.data}
                                 projectId={project.id}
                                 blockIndex={index}
                             />

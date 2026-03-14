@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import styles from "../admin.module.css";
+import styles from "../../admin.module.css";
 import Link from "next/link";
 import { createBrowserSupabase } from "@/lib/supabase";
 

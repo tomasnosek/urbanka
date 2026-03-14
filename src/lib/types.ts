@@ -38,7 +38,7 @@ export interface StatItem {
 
 export interface Block<T = any> {
     id: string;
-    type: "hero" | "stats" | "contentBlockLeft" | "contentBlockRight" | "timeline";
+    type: "hero" | "stats" | "contentBlockLeft" | "contentBlockRight" | "timeline" | "gallery";
     data: T;
 }
 

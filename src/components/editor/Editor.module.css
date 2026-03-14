@@ -253,7 +253,7 @@
     border-color: #f05a66;
 }
 
-/* --- Delete Section Button --- */
+/* --- Section Actions (Move & Delete) --- */
 .sectionWrapper {
     position: relative;
     border-radius: var(--radius);
@@ -265,14 +265,26 @@
     outline-offset: 4px;
 }
 
-.deleteSectionBtn {
+.sectionActions {
     position: absolute;
     top: -16px;
     right: 16px;
+    display: flex;
+    gap: var(--space-2);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+    z-index: 50;
+}
+
+.sectionWrapper:hover .sectionActions {
+    opacity: 1;
+}
+
+.sectionActionBtn {
     height: 32px;
-    padding: 0 var(--space-4);
+    padding: 0 var(--space-3);
     border-radius: 16px;
-    background: #e63946;
+    background: var(--color-slate-800);
     color: white;
     border: none;
     font-size: var(--text-sm);
@@ -282,18 +294,25 @@
     gap: var(--space-2);
     justify-content: center;
     cursor: pointer;
-    opacity: 0;
-    transition: opacity var(--transition-fast), transform var(--transition-fast), background-color var(--transition-fast);
-    z-index: 50;
+    transition: transform var(--transition-fast), background-color var(--transition-fast);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.sectionWrapper:hover .deleteSectionBtn {
-    opacity: 1;
+.sectionActionBtn:hover:not(:disabled) {
+    transform: scale(1.05);
+    background: var(--color-slate-900);
 }
 
-.deleteSectionBtn:hover {
-    transform: scale(1.05);
+.sectionActionBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.sectionActionBtn.delete {
+    background: #e63946;
+}
+
+.sectionActionBtn.delete:hover:not(:disabled) {
     background: #f05a66;
 }
 

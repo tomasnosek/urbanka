@@ -90,6 +90,25 @@ export async function POST(request: Request) {
                 url: "/images/black.png",
                 caption: "Nový obrázek"
             });
+        } else if (type === "galleryBlock") {
+            content.blocks.push({
+                id: crypto.randomUUID(),
+                type: "gallery",
+                data: []
+            });
+        } else if (type === "galleryImage") {
+            const { blockIndex } = body;
+            if (blockIndex === undefined || !content.blocks[blockIndex]) {
+                return NextResponse.json({ error: "Invalid gallery indices" }, { status: 400 });
+            }
+            if (!content.blocks[blockIndex].data) {
+                content.blocks[blockIndex].data = [];
+            }
+            content.blocks[blockIndex].data.push({
+                id: crypto.randomUUID(),
+                url: "/images/black.png",
+                caption: "Nový obrázek"
+            });
         } else {
             return NextResponse.json({ error: "Unknown type" }, { status: 400 });
         }

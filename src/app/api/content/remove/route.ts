@@ -49,6 +49,16 @@ export async function POST(request: Request) {
             ) {
                 content.blocks[blockIndex].data[timelineIndex].images.splice(imageIndex, 1);
             }
+        } else if (type === "galleryImage") {
+            const { blockIndex, imageIndex } = body;
+            if (
+                blockIndex !== undefined &&
+                imageIndex !== undefined &&
+                content.blocks[blockIndex] &&
+                content.blocks[blockIndex].data
+            ) {
+                content.blocks[blockIndex].data.splice(imageIndex, 1);
+            }
         } else {
             return NextResponse.json({ error: "Unknown type" }, { status: 400 });
         }

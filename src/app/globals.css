@@ -177,6 +177,8 @@ img {
 @media (min-width: 1024px) {
   :root {
     --wrapper-padding: var(--space-8);
+    --wrapper-width: 80%;
+    --wrapper-max-width: 1200px;
   }
 }
 

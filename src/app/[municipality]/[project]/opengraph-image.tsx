@@ -4,21 +4,17 @@ import { createServerSupabase } from "@/lib/supabase-server";
 // Revalidate this OG image every hour to keep it fresh
 export const revalidate = 3600;
 
-export async function alt({ params }: { params: { municipality: string; project: string } }) {
-    return `Náhledový obrázek pro projekt`;
-}
+export const alt = "Náhledový obrázek pro projekt";
 
-export async function size() {
-    return {
-        width: 1200,
-        height: 630,
-    };
-}
+export const size = {
+    width: 1200,
+    height: 630,
+};
 
 export const contentType = "image/png";
 
 // Load custom font (Ranade-Medium) from public folder
-const font = fetch(new URL("../../../../../public/Ranade-Medium.otf", import.meta.url)).then((res) =>
+const font = fetch(new URL("../../../../public/Ranade-Medium.otf", import.meta.url)).then((res) =>
     res.arrayBuffer()
 );
 
