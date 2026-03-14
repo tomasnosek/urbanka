@@ -70,10 +70,10 @@ export function EditableText({
     }, [value, path, projectId, multiline]);
 
     const canEdit = isAdmin && isEditMode;
+    const Component = Tag as any;
 
-    /* @ts-expect-error dynamic tag */
     return (
-        <Tag
+        <Component
             ref={ref}
             className={`${className ?? ""} ${canEdit ? styles.editable : ""}`}
             contentEditable={canEdit}
@@ -82,6 +82,6 @@ export function EditableText({
             spellCheck={canEdit ? false : undefined}
         >
             {value}
-        </Tag>
+        </Component>
     );
 }
