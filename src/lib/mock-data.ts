@@ -9,6 +9,7 @@ export const municipalities: Municipality[] = [
         id: "m1",
         name: "Město Lužice",
         slug: "luzice",
+        emblem_url: null,
         created_at: "2024-01-15T10:00:00Z",
     },
 ];
