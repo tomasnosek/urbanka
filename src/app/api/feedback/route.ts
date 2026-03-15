@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { analyzeFeedback } from "@/lib/gemini";
+import { sendFeedbackNotification } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
     try {
@@ -36,6 +37,22 @@ export async function POST(request: NextRequest) {
                 { status: 500 }
             );
         }
+
+        // Fire-and-forget: send notification email to admin
+        // Fetch project title for the email
+        const { data: project } = await supabase
+            .from("projects")
+            .select("title")
+            .eq("id", projectId)
+            .single();
+
+        sendFeedbackNotification({
+            projectTitle: project?.title || "Neznámý projekt",
+            name: name || null,
+            email: email || null,
+            message: message.trim(),
+            category,
+        }).catch((err) => console.error("Email notification failed:", err));
 
         return NextResponse.json({ success: true });
     } catch (err) {

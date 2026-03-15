@@ -1,0 +1,143 @@
+/* =============================================
+   URBANKA — Municipalities Admin Styles
+   ============================================= */
+
+.emblemPreview {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    border-radius: var(--radius);
+    background-color: var(--color-bg);
+    flex-shrink: 0;
+}
+
+.emblemPlaceholder {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius);
+    background-color: var(--color-bg);
+    border: 1px dashed var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+}
+
+.municipalityRow {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    width: 100%;
+}
+
+.municipalityInfo {
+    flex: 1;
+    min-width: 0;
+}
+
+.municipalityActions {
+    display: flex;
+    gap: var(--space-2);
+    flex-shrink: 0;
+}
+
+.actionBtn {
+    background: none;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    padding: 4px 12px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: var(--text-sm);
+    font-family: var(--font-sans);
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.actionBtn:hover {
+    border-color: var(--color-sage);
+    color: var(--color-sage);
+}
+
+.actionBtnDanger {
+    composes: actionBtn;
+}
+
+.actionBtnDanger:hover {
+    border-color: #c92a2a;
+    color: #c92a2a;
+}
+
+.actionBtnSave {
+    composes: actionBtn;
+    background-color: var(--color-sage);
+    border-color: var(--color-sage);
+    color: white;
+}
+
+.actionBtnSave:hover {
+    opacity: 0.9;
+}
+
+/* --- Edit Form --- */
+.editForm {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    width: 100%;
+}
+
+.editRow {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+}
+
+.editInput {
+    flex: 1;
+    padding: var(--space-2);
+    border: var(--border);
+    border-radius: var(--radius);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+}
+
+/* --- Add Form --- */
+.addForm {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.addInput {
+    flex: 1;
+    min-width: 180px;
+    padding: var(--space-2) var(--space-3);
+    border: var(--border);
+    border-radius: var(--radius);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+}
+
+.addBtn {
+    background-color: var(--color-sage);
+    color: white;
+    border: none;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-weight: var(--font-medium);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    transition: opacity 0.15s;
+}
+
+.addBtn:hover {
+    opacity: 0.9;
+}
+
+.addBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
