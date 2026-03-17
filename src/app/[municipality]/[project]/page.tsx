@@ -120,26 +120,32 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                             />
                         )}
                         {block.type === "stats" && (
-                            <StatsBar
-                                stats={block.data}
-                                projectId={project.id}
-                                blockIndex={index}
-                            />
+                            <div className="layout-wrap">
+                                <StatsBar
+                                    stats={block.data}
+                                    projectId={project.id}
+                                    blockIndex={index}
+                                />
+                            </div>
                         )}
                         {(block.type === "contentBlockLeft" || block.type === "contentBlockRight") && (
-                            <ContentBlock
-                                block={block.data}
-                                index={block.type === "contentBlockLeft" ? 1 : 0}
-                                projectId={project.id}
-                                blockIndex={index}
-                            />
+                            <div className="layout-wrap">
+                                <ContentBlock
+                                    block={block.data}
+                                    index={block.type === "contentBlockLeft" ? 1 : 0}
+                                    projectId={project.id}
+                                    blockIndex={index}
+                                />
+                            </div>
                         )}
                         {block.type === "timeline" && block.data?.length > 0 && (
-                            <Timeline
-                                items={block.data}
-                                projectId={project.id}
-                                blockIndex={index}
-                            />
+                            <div className="layout-wrap-overflow">
+                                <Timeline
+                                    items={block.data}
+                                    projectId={project.id}
+                                    blockIndex={index}
+                                />
+                            </div>
                         )}
                         {block.type === "gallery" && (
                             <Gallery
@@ -151,13 +157,17 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     </SectionWrapper>
                 ))}
 
-                <ProjectNav
-                    municipalitySlug={municipalitySlug}
-                    prev={prevProject ? { title: prevProject.title, slug: prevProject.slug } : null}
-                    next={nextProject ? { title: nextProject.title, slug: nextProject.slug } : null}
-                />
+                <div className="layout-wrap">
+                    <ProjectNav
+                        municipalitySlug={municipalitySlug}
+                        prev={prevProject ? { title: prevProject.title, slug: prevProject.slug } : null}
+                        next={nextProject ? { title: nextProject.title, slug: nextProject.slug } : null}
+                    />
+                </div>
 
-                <FeedbackForm projectId={project.id} />
+                <div className="layout-wrap">
+                    <FeedbackForm projectId={project.id} />
+                </div>
             </main>
             <Footer municipalityName={municipality.name} />
             <EditorToolbar projectId={project.id} />

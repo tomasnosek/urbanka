@@ -162,9 +162,7 @@
     margin-left: calc(-1 * var(--space-4));
     padding-left: var(--space-4);
 
-    /* Necháme přesáhnout na pravé straně až k okraji displeje */
-    margin-right: calc(50% - 50vw);
-    padding-right: calc(50vw - 50%);
+    /* Right side overflows naturally via parent .layout-wrap-overflow */
 
     padding-bottom: var(--space-2);
 }

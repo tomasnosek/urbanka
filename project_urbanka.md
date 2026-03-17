@@ -29,8 +29,14 @@ Design je technický, nadčasový, minimalistický, implementovaný na míru s "
 - CSS Modules & Variables: Čistý Vanilla CSS přístup s globálním zadefinováním proměnných (`--color-sage`, `--color-slate`, `--wrapper-width`, `--space-X`).
 - Estetika: Matné, tlumené barvy (břidlicová #2F3E46, šalvějová #84A98C), vysoký kontrast, bílé pozadí (`#FFFFFF`).
 - Geometrie (Striktní pravidlo): Všechny komponenty mají fixní zaoblení hran 4px ("hard-edged minimal"). Bez stínů, k oddělení slouží hraniční linky (1px borders) a white-space.
-- Responzivní layout: Flexibilní systém `wrapper` (omezená šířka s přesným paddingem) a `full-width` sekcí s možností průniku obsahu (např. "bleed" do krajů monitoru).
-- Klíčová komponenta (Timeline): Vertikální osa s horizontální galerií (`overflow-x: auto`, `scroll-snap-type: x mandatory`). Fotografie přetékají rodičovský kontejner směrem ke kraji displeje.
+- Responzivní layout — 3 layout módy (globální CSS třídy v `globals.css`):
+  - `.layout-full` — plná šířka viewportu (edge-to-edge). Použití: Hero obrázek, Gallery.
+  - `.layout-wrap` — centrovano s `max-width` a `padding` dle breakpointů (`--wrapper-width`, `--wrapper-max-width`, `--wrapper-padding`). Použití: Stats, ContentBlock, Feedback, ProjectNav, hero text.
+  - `.layout-wrap-overflow` — vlevo respektuje wrapper, vpravo přetéká k okraji viewportu (padding-right: 0, overflow: visible). Použití: Timeline s horizontální galerií.
+  - Legacy alias `.wrapper` = identický s `.layout-wrap`, používaný na jiných stránkách (homepage, municipality page, Header, Footer).
+  - `<main>` na project page nemá žádná šířková omezení — layout mód se specifikuje per-section obalovým `<div className="layout-wrap">` (nebo odpovídající třídou).
+  - Layout třídy je možné zanořovat: sekce může být `layout-full`, ale vnitřní obsah `layout-wrap` (příklad: Hero — sekce full-width, text uvnitř wrap, obrázek edge-to-edge).
+- Klíčová komponenta (Timeline): Vertikální osa s horizontální galerií (`overflow-x: auto`, `scroll-snap-type: x mandatory`). Fotografie přetékají rodičovský kontejner směrem ke kraji displeje díky `.layout-wrap-overflow`.
 
 6. Webové moduly
 - Navigace: Čistý Header s logem a jednoduchým menu + Footer.
