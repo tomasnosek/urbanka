@@ -2,6 +2,7 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import styles from "../admin.module.css";
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
+import MunicipalitySelector from "./MunicipalitySelector";
 
 export const revalidate = 0;
 
@@ -17,10 +18,17 @@ export default async function ProjectsPage() {
             slug,
             status,
             is_featured,
+            municipality_id,
             created_at,
             municipalities ( id, name, slug )
         `)
         .order("created_at", { ascending: false });
+
+    // Fetch all municipalities for the selector
+    const { data: allMunicipalities } = await supabase
+        .from("municipalities")
+        .select("id, name, slug")
+        .order("name", { ascending: true });
 
     // Server action to toggle featured status
     async function toggleFeatured(formData: FormData) {
@@ -94,7 +102,13 @@ export default async function ProjectsPage() {
                                         </span>
                                     </div>
                                     <div className={styles.itemMeta}>
-                                        Obec: {p.municipalities?.name} • ID: {p.slug} • Vytvořeno: {new Date(p.created_at).toLocaleDateString("cs-CZ")}
+                                        Obec:{" "}
+                                        <MunicipalitySelector
+                                            projectId={p.id}
+                                            currentMunicipalityId={p.municipality_id}
+                                            municipalities={allMunicipalities || []}
+                                        />
+                                        {" "}• ID: {p.slug} • Vytvořeno: {new Date(p.created_at).toLocaleDateString("cs-CZ")}
                                     </div>
                                     <div style={{ marginTop: "var(--space-2)" }}>
                                         <Link href={`/${p.municipalities?.slug}/${p.slug}`} style={{ fontSize: "var(--text-sm)", color: "var(--color-sage)", fontWeight: "var(--font-medium)", textDecoration: "none" }}>

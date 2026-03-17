@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Libre_Baskerville } from "next/font/google";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { EditModeProvider } from "@/components/editor/EditModeContext";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const inter = Inter({
@@ -32,6 +33,7 @@ export default function RootLayout({
         <AuthProvider>
           <EditModeProvider>{children}</EditModeProvider>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );

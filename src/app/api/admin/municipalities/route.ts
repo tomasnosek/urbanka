@@ -15,7 +15,7 @@ export async function PUT(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { id, name, emblem_url } = body;
+        const { id, name, postal_code, emblem_url } = body;
 
         if (!id || !name?.trim()) {
             return NextResponse.json({ error: "ID a název jsou povinné." }, { status: 400 });
@@ -31,7 +31,7 @@ export async function PUT(request: NextRequest) {
 
         const { error } = await supabase
             .from("municipalities")
-            .update({ name: name.trim(), slug, emblem_url: emblem_url || null })
+            .update({ name: name.trim(), slug, postal_code: postal_code || null, emblem_url: emblem_url || null })
             .eq("id", id);
 
         if (error) {
