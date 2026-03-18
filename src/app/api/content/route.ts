@@ -57,7 +57,24 @@ export async function PATCH(request: NextRequest) {
             }
         }
 
-        revalidatePath('/', 'layout');
+        // Revalidate only the specific project page
+        const { data: projectData } = await supabase
+            .from("projects")
+            .select("slug, municipality_id")
+            .eq("id", projectId)
+            .single();
+
+        if (projectData) {
+            const { data: municipality } = await supabase
+                .from("municipalities")
+                .select("slug")
+                .eq("id", projectData.municipality_id)
+                .single();
+
+            if (municipality) {
+                revalidatePath(`/${municipality.slug}/${projectData.slug}`);
+            }
+        }
 
         return NextResponse.json({ success: true });
     } catch (err) {
