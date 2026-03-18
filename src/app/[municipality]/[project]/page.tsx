@@ -3,16 +3,11 @@ import { Metadata, ResolvingMetadata } from "next";
 export const dynamic = 'force-dynamic';
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { HeroSection } from "@/components/project/HeroSection";
-import { StatsBar } from "@/components/project/StatsBar";
-import { ContentBlock } from "@/components/project/ContentBlock";
-import { Timeline } from "@/components/project/Timeline";
 import { ProjectNav } from "@/components/project/ProjectNav";
 import { FeedbackForm } from "@/components/project/FeedbackForm";
-import { Gallery } from "@/components/project/Gallery";
 import { EditorToolbar } from "@/components/editor/EditorToolbar";
 import { EditorDock } from "@/components/editor/EditorDock";
-import { SectionWrapper } from "@/components/editor/SectionWrapper";
+import { BlocksContainer } from "@/components/editor/BlocksContainer";
 import {
     getMunicipality,
     getProject,
@@ -105,57 +100,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         <div className={styles.page}>
             <Header municipalityName={municipality.name} />
             <main className={styles.main}>
-                {blocks.map((block: any, index: number) => (
-                    <SectionWrapper key={block.id} blockId={block.id} projectId={project.id} blockIndex={index} totalBlocks={blocks.length}>
-                        {block.type === "hero" && (
-                            <HeroSection
-                                title={block.data.title}
-                                lead={block.data.lead}
-                                imageUrl={block.data.imageUrl}
-                                imageCaption={block.data.imageCaption}
-                                status={meta.status}
-                                updateDate={meta.updateDate}
-                                projectId={project.id}
-                                blockIndex={index}
-                            />
-                        )}
-                        {block.type === "stats" && (
-                            <div className="layout-wrap">
-                                <StatsBar
-                                    stats={block.data}
-                                    projectId={project.id}
-                                    blockIndex={index}
-                                />
-                            </div>
-                        )}
-                        {(block.type === "contentBlockLeft" || block.type === "contentBlockRight") && (
-                            <div className="layout-wrap">
-                                <ContentBlock
-                                    block={block.data}
-                                    index={block.type === "contentBlockLeft" ? 1 : 0}
-                                    projectId={project.id}
-                                    blockIndex={index}
-                                />
-                            </div>
-                        )}
-                        {block.type === "timeline" && block.data?.length > 0 && (
-                            <div className="layout-wrap-overflow">
-                                <Timeline
-                                    items={block.data}
-                                    projectId={project.id}
-                                    blockIndex={index}
-                                />
-                            </div>
-                        )}
-                        {block.type === "gallery" && (
-                            <Gallery
-                                images={block.data}
-                                projectId={project.id}
-                                blockIndex={index}
-                            />
-                        )}
-                    </SectionWrapper>
-                ))}
+                <BlocksContainer
+                    initialBlocks={blocks}
+                    meta={meta}
+                    projectId={project.id}
+                />
 
                 <div className="layout-wrap">
                     <ProjectNav
