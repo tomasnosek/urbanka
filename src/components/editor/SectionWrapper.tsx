@@ -1,79 +1,35 @@
 "use client";
 
 import { useEditMode } from "./EditModeContext";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 import styles from "./Editor.module.css";
 
 interface SectionWrapperProps {
     children: React.ReactNode;
     blockId: string;
-    projectId: string;
     blockIndex: number;
     totalBlocks: number;
+    onMove: (direction: "up" | "down") => void;
+    onDelete: () => void;
 }
 
-export function SectionWrapper({ children, blockId, projectId, blockIndex, totalBlocks }: SectionWrapperProps) {
+export function SectionWrapper({
+    children,
+    blockId,
+    blockIndex,
+    totalBlocks,
+    onMove,
+    onDelete,
+}: SectionWrapperProps) {
     const { isEditMode } = useEditMode();
-    const router = useRouter();
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [isMoving, setIsMoving] = useState(false);
-
-    const handleMove = async (direction: "up" | "down") => {
-        const newIndex = direction === "up" ? blockIndex - 1 : blockIndex + 1;
-        if (newIndex < 0 || newIndex >= totalBlocks) return;
-        
-        try {
-            setIsMoving(true);
-            const res = await fetch("/api/content/reorder", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    projectId, 
-                    path: "blocks", 
-                    oldIndex: blockIndex, 
-                    newIndex 
-                }),
-            });
-            if (res.ok) {
-                router.refresh();
-            } else {
-                alert("Nepodařilo se přesunout sekci.");
-            }
-        } catch (error) {
-            console.error(error);
-            alert("Chyba při přesunu sekce.");
-        } finally {
-            setIsMoving(false);
-        }
-    };
-
-    const handleDelete = async () => {
-        if (!confirm("Opravdu chcete odstranit tuto sekci?")) return;
-
-        try {
-            setIsDeleting(true);
-            const res = await fetch("/api/content/remove", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ projectId, type: "block", blockIndex }),
-            });
-            if (res.ok) {
-                router.refresh();
-            } else {
-                alert("Nepodařilo se smazat sekci.");
-            }
-        } catch (error) {
-            console.error(error);
-            alert("Chyba při mazání sekce.");
-        } finally {
-            setIsDeleting(false);
-        }
-    };
 
     if (!isEditMode) {
         return <>{children}</>;
     }
+
+    const handleDeleteClick = () => {
+        if (!confirm("Opravdu chcete odstranit tuto sekci?")) return;
+        onDelete();
+    };
 
     return (
         <div className={styles.sectionWrapper} data-block-id={blockId}>
@@ -82,8 +38,7 @@ export function SectionWrapper({ children, blockId, projectId, blockIndex, total
                 {blockIndex > 0 && (
                     <button
                         className={styles.sectionActionBtn}
-                        onClick={() => handleMove("up")}
-                        disabled={isMoving || isDeleting}
+                        onClick={() => onMove("up")}
                         title="Posunout nahoru"
                     >
                         ↑ Nahoru
@@ -92,8 +47,7 @@ export function SectionWrapper({ children, blockId, projectId, blockIndex, total
                 {blockIndex < totalBlocks - 1 && (
                     <button
                         className={styles.sectionActionBtn}
-                        onClick={() => handleMove("down")}
-                        disabled={isMoving || isDeleting}
+                        onClick={() => onMove("down")}
                         title="Posunout dolů"
                     >
                         ↓ Dolů
@@ -101,11 +55,10 @@ export function SectionWrapper({ children, blockId, projectId, blockIndex, total
                 )}
                 <button
                     className={`${styles.sectionActionBtn} ${styles.delete}`}
-                    onClick={handleDelete}
-                    disabled={isMoving || isDeleting}
+                    onClick={handleDeleteClick}
                     title="Zrušit sekci"
                 >
-                    {isDeleting ? "..." : "✕ Zrušit"}
+                    ✕ Zrušit
                 </button>
             </div>
         </div>
