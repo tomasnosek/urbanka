@@ -81,9 +81,15 @@
   --leading-normal: 1.5;
   --leading-relaxed: 1.65;
 
-  /* Layout */
+  /* Layout — Základní hodnoty (mobile-first, < 768px)
+   * --wrapper-width:   šířka obsahu jako % viewportu (100% = na mobilu zabírá vše)
+   * --wrapper-max-width: absolutní strop šířky — zatím bez limitu na mobilu
+   * --wrapper-padding: vnitřní odsazení od okrajů (chrání obsah od hran displeje)
+   * Tyto proměnné řídí všechny 3 layout módy: layout-wrap, layout-wrap-overflow, .wrapper
+   */
   --wrapper-width: 100%;
-  --wrapper-padding: var(--space-4);
+  /* --wrapper-max-width: není nastaveno — na mobilu zabírá plnou šířku */
+  --wrapper-padding: var(--space-4);  /* 16px — minimální odsazení od okrajů na mobilu */
   --header-height: 60px;
 
   /* Transitions */
@@ -148,45 +154,87 @@ img {
   max-width: 100%;
 }
 
-/* --- Layout Utility Classes --- */
+/* ============================================================
+   SECTION LAYOUT MODES
+   ============================================================
+   3 globální třídy pro řízení šířky sekcí na project page.
+   <main> nemá žádná omezení — layout se řeší per-section.
+   
+   Pravidlo: layout-full sekce mají vždy uvnitř layout-wrap
+   pro omezení textového/datového obsahu.
+
+   .layout-full           — edge-to-edge, žádná omezení
+   .layout-wrap           — centrovano, max-width + padding
+   .layout-wrap-overflow  — vlevo wrap, vpravo přetéká k okraji viewportu
+   ============================================================ */
+
+/* Mode 1: Plná šířka — žádná omezení */
+.layout-full {
+  width: 100%;
+}
+
+/* Mode 2: Wrapper — obsah centrovano s maximální šířkou */
+.layout-wrap {
+  width: var(--wrapper-width);          /* % viewportu — mění se v breakpointech */
+  max-width: var(--wrapper-max-width);  /* absolutní strop v px — mění se v breakpointech */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--wrapper-padding);   /* odsazení od levého okraje */
+  padding-right: var(--wrapper-padding);  /* odsazení od pravého okraje */
+}
+
+/* Mode 3: Wrapper s přetokem vpravo — obsah vlevo zarovnán jako wrap,
+   ale vpravo nemá padding a přetéká k okraji viewportu.
+   Použití: Timeline galerie, horizontálně scrollované sekce. */
+.layout-wrap-overflow {
+  width: var(--wrapper-width);
+  max-width: var(--wrapper-max-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--wrapper-padding);
+  padding-right: 0;                      /* žádný padding vpravo — obsah jde až k okraji */
+  overflow: visible;
+}
+
+/* Legacy alias — identický s layout-wrap, používaný na jiných stránkách */
 .wrapper {
   width: var(--wrapper-width);
   max-width: var(--wrapper-max-width);
   margin-left: auto;
   margin-right: auto;
-  /* padding-left: var(--wrapper-padding);
-  padding-right: var(--wrapper-padding); */
+  padding-left: var(--wrapper-padding);
+  padding-right: var(--wrapper-padding);
 }
 
-.full-width {
-  width: 100%;
-  max-width: none;
-  /* Pokud by byla sekce náhodou uvnitř wrapperu a potřebovala ho "prorazit", 
-     můžeš použít tento trik odkomentováním:*/
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
-}
+/* ============================================================
+   LAYOUT BREAKPOINTS
+   Zde se mění hodnoty wrapper proměnných.
+   Uprav hodnoty podle potřeby — ovlivní všechny layout-wrap sekce.
+   ============================================================ */
 
+/* Tablet (768px+) */
 @media (min-width: 768px) {
   :root {
-    --wrapper-padding: var(--space-6);
+    --wrapper-padding: var(--space-6);  /* 24px — více prostoru od okrajů */
+    /* --wrapper-width: 100%; */        /* ← uprav pokud chceš zúžit obsah na tabletu */
+    /* --wrapper-max-width: 960px; */   /* ← uprav pokud chceš absolutní strop na tabletu */
   }
 }
 
+/* Desktop (1024px+) */
 @media (min-width: 1024px) {
   :root {
-    --wrapper-padding: var(--space-8);
-    --wrapper-width: 80%;
-    --wrapper-max-width: 1200px;
+    --wrapper-padding: var(--space-8);  /* 32px — komfortní padding na desktopu */
+    --wrapper-width: 80%;              /* obsah zabírá 80% viewportu */
+    --wrapper-max-width: 1200px;       /* absolutní strop — obsah nikdy nebude širší */
   }
 }
 
+/* Velký desktop (1920px+) */
 @media (min-width: 1920px) {
   :root {
-    /* Layout */
-    --wrapper-width: 80%;
-    --wrapper-max-width: 1200px;
-    /* --wrapper-padding: var(--space-4);  Modifikuje se automaticky podle breakpointů */
+    --wrapper-width: 80%;             /* ← uprav: na velkých monitorech může být užší (70%?) */
+    --wrapper-max-width: 1200px;      /* ← uprav: zvyš na 1400px pokud chceš širší obsah */
+    /* --wrapper-padding: var(--space-10); */  /* ← uprav padding pro ultra-wide */
   }
 }

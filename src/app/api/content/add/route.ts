@@ -16,7 +16,7 @@ export async function POST(request: Request) {
         // 1. Fetch current content
         const { data: project, error: fetchError } = await supabase
             .from("projects")
-            .select("content")
+            .select("content, slug, municipality_id")
             .eq("id", projectId)
             .single();
 
@@ -123,7 +123,16 @@ export async function POST(request: Request) {
             throw updateError;
         }
 
-        revalidatePath('/', 'layout');
+        // Revalidate only the specific project page
+        const { data: municipality } = await supabase
+            .from("municipalities")
+            .select("slug")
+            .eq("id", project.municipality_id)
+            .single();
+
+        if (municipality) {
+            revalidatePath(`/${municipality.slug}/${project.slug}`);
+        }
 
         return NextResponse.json({ success: true, content });
     } catch (error: any) {

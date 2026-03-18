@@ -33,10 +33,10 @@ export async function POST(request: Request) {
 
         const supabase = await createServerSupabase();
 
-        // 1. Fetch current content
+        // 1. Fetch current content + slugs for targeted revalidation
         const { data: project, error: fetchError } = await supabase
             .from("projects")
-            .select("content")
+            .select("content, slug, municipality_id")
             .eq("id", projectId)
             .single();
 
@@ -74,7 +74,16 @@ export async function POST(request: Request) {
             throw updateError;
         }
 
-        revalidatePath('/', 'layout');
+        // 5. Revalidate only the specific project page
+        const { data: municipality } = await supabase
+            .from("municipalities")
+            .select("slug")
+            .eq("id", project.municipality_id)
+            .single();
+
+        if (municipality) {
+            revalidatePath(`/${municipality.slug}/${project.slug}`);
+        }
 
         return NextResponse.json({ success: true });
     } catch (error: any) {
@@ -82,3 +91,4 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
+

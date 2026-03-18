@@ -27,7 +27,7 @@ export function HeroSection({
 }: HeroSectionProps) {
     return (
         <section className={styles.hero}>
-            <div className={styles.heroContent}>
+            <div className={`${styles.heroContent} layout-wrap`}>
                 <div className={styles.metaRow}>
                     <span className={styles.statusBadge}>
                         <span className={styles.statusDot} />
