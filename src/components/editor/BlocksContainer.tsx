@@ -7,7 +7,7 @@ import { ContentBlock } from "@/components/project/ContentBlock";
 import { Timeline } from "@/components/project/Timeline";
 import { Gallery } from "@/components/project/Gallery";
 import { SectionWrapper } from "@/components/editor/SectionWrapper";
-import { Toast, ToastStatus } from "@/components/ui/Toast";
+import { useToast } from "@/components/ui/ToastContext";
 
 interface BlocksContainerProps {
     initialBlocks: any[];
@@ -16,25 +16,17 @@ interface BlocksContainerProps {
         updateDate: string;
     };
     projectId: string;
+    projectTitle: string;
 }
 
-export function BlocksContainer({ initialBlocks, meta, projectId }: BlocksContainerProps) {
+export function BlocksContainer({ initialBlocks, meta, projectId, projectTitle }: BlocksContainerProps) {
     const [blocks, setBlocks] = useState(initialBlocks);
-    const [toastStatus, setToastStatus] = useState<ToastStatus>("idle");
-    const [toastMessage, setToastMessage] = useState<string | undefined>();
-
+    const { showToast } = useToast();
 
     // Sync with server updates (e.g., after router.refresh() fetches new data)
-    // We stringify the blocks to ensure we only sync when the actual content changes, 
-    // avoiding unnecessary re-renders from simple reference changes.
     useEffect(() => {
         setBlocks(initialBlocks);
     }, [JSON.stringify(initialBlocks)]);
-
-    const showToast = useCallback((status: ToastStatus, message?: string) => {
-        setToastStatus(status);
-        setToastMessage(message);
-    }, []);
 
     // --- Optimistic Move ---
     const handleMove = useCallback(async (blockIndex: number, direction: "up" | "down") => {
@@ -114,7 +106,7 @@ export function BlocksContainer({ initialBlocks, meta, projectId }: BlocksContai
                 >
                     {block.type === "hero" && (
                         <HeroSection
-                            title={block.data.title}
+                            title={projectTitle}
                             lead={block.data.lead}
                             imageUrl={block.data.imageUrl}
                             imageCaption={block.data.imageCaption}
@@ -161,8 +153,6 @@ export function BlocksContainer({ initialBlocks, meta, projectId }: BlocksContai
                     )}
                 </SectionWrapper>
             ))}
-
-            <Toast status={toastStatus} message={toastMessage} />
         </>
     );
 }

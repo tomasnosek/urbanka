@@ -7,6 +7,7 @@
 import { useRef, useCallback } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useEditMode } from "@/components/editor/EditModeContext";
+import { useToast } from "@/components/ui/ToastContext";
 import styles from "./Editor.module.css";
 
 interface EditableTextProps {
@@ -35,6 +36,7 @@ export function EditableText({
     const { isAdmin } = useAuth();
     const { isEditMode } = useEditMode();
     const ref = useRef<HTMLElement>(null);
+    const { showToast } = useToast();
 
     const handleBlur = useCallback(async () => {
         const el = ref.current;
@@ -58,16 +60,19 @@ export function EditableText({
                 }),
             });
 
-            if (!res.ok) {
+            if (res.ok) {
+                showToast("success");
+            } else {
                 console.error("Failed to save:", await res.text());
-                // Revert on error
+                showToast("error", "Nepodařilo se uložit");
                 if (el) el.textContent = value;
             }
         } catch (err) {
             console.error("Save error:", err);
+            showToast("error", "Chyba při ukládání");
             if (el) el.textContent = value;
         }
-    }, [value, path, projectId, multiline]);
+    }, [value, path, projectId, multiline, showToast]);
 
     const canEdit = isAdmin && isEditMode;
     const Component = Tag as any;

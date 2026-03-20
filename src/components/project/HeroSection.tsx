@@ -43,7 +43,7 @@ export function HeroSection({
                 </div>
                 <EditableText
                     value={title}
-                    path={`blocks.${blockIndex}.data.title`}
+                    path="project.title"
                     projectId={projectId}
                     as="h1"
                     className={styles.title}
