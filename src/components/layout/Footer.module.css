@@ -26,3 +26,19 @@
     font-size: var(--text-sm);
     color: var(--color-slate-400);
 }
+
+.footerLinks {
+    display: flex;
+    gap: var(--space-4);
+}
+
+.loginLink {
+    font-size: var(--text-sm);
+    color: var(--color-slate-400);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.loginLink:hover {
+    color: var(--color-slate-200);
+}

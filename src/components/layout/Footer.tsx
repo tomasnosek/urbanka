@@ -1,3 +1,4 @@
+import Link from "next/link";
 import styles from "./Footer.module.css";
 
 interface FooterProps {
@@ -16,6 +17,11 @@ export function Footer({ municipalityName }: FooterProps) {
                         ? ` ${municipalityName}.`
                         : ""}{" "}
                     Informační portál Urbanka.
+                </div>
+                <div className={styles.footerLinks}>
+                    <Link href="/login" className={styles.loginLink}>
+                        Přihlásit se
+                    </Link>
                 </div>
             </div>
         </footer>

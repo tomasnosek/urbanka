@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase-server";
+import { revalidatePath } from "next/cache";
 
 export async function POST(request: NextRequest) {
     try {
@@ -12,6 +13,7 @@ export async function POST(request: NextRequest) {
         const file = formData.get("file") as File | null;
         const projectId = formData.get("projectId") as string;
         const path = formData.get("path") as string;
+        const pathToRevalidate = formData.get("revalidatePath") as string | null;
 
         if (!file || !projectId || !path) {
             return NextResponse.json(
@@ -81,6 +83,10 @@ export async function POST(request: NextRequest) {
                 { error: dbError.message },
                 { status: 500 }
             );
+        }
+
+        if (pathToRevalidate) {
+            revalidatePath(pathToRevalidate);
         }
 
         return NextResponse.json({ url });

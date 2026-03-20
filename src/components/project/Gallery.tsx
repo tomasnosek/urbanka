@@ -4,7 +4,7 @@ import { TimelineImage } from "@/lib/types";
 import { EditableImage } from "@/components/editor/EditableImage";
 import { EditableText } from "@/components/editor/EditableText";
 import { useEditMode } from "@/components/editor/EditModeContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
     DndContext,
@@ -127,10 +127,14 @@ interface GalleryProps {
 export function Gallery({ images, projectId, blockIndex }: GalleryProps) {
     const { isEditMode } = useEditMode();
     const router = useRouter();
-    const [isAdding, setIsAdding] = useState(false);
     const [removingImage, setRemovingImage] = useState<number | null>(null);
 
-    // Map images to ensure they have unique string IDs
+    // Robust optimistic state sync:
+    // We construct a hash of the *server* images to detect when the server actually caught up
+    // to our changes, or if another user edited the project.
+    const serverHash = images.map(img => img.url).join('|');
+    const [lastSyncedHash, setLastSyncedHash] = useState(serverHash);
+
     const [items, setItems] = useState(() => 
         images.map((img, i) => ({
             ...img,
@@ -138,13 +142,16 @@ export function Gallery({ images, projectId, blockIndex }: GalleryProps) {
         }))
     );
 
-    // Sync state if props change (from DB after saves)
-    if (images.length !== items.length) {
-        setItems(images.map((img, i) => ({
-            ...img,
-            id: img.id || `gallery-img-${img.url}-${i}`,
-        })));
-    }
+    useEffect(() => {
+        const currentServerHash = images.map(img => img.url).join('|');
+        if (currentServerHash !== lastSyncedHash) {
+            setItems(images.map((img, i) => ({
+                ...img,
+                id: img.id || `gallery-img-${img.url}-${i}`,
+            })));
+            setLastSyncedHash(currentServerHash);
+        }
+    }, [images, lastSyncedHash]);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -158,31 +165,13 @@ export function Gallery({ images, projectId, blockIndex }: GalleryProps) {
         })
     );
 
-    const handleAddImage = async () => {
-        try {
-            setIsAdding(true);
-            const res = await fetch("/api/content/add", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ projectId, type: "galleryImage", blockIndex }),
-            });
-            if (res.ok) {
-                router.refresh();
-            } else {
-                alert("Nepodařilo se přidat fotku do galerie.");
-            }
-        } catch (error) {
-            console.error(error);
-            alert("Chyba při přidávání fotky.");
-        } finally {
-            setIsAdding(false);
-        }
-    };
-
     const handleRemoveImage = async (index: number, url: string) => {
         if (!confirm("Opravdu chcete smazat tento obrázek?")) return;
         try {
             setRemovingImage(index);
+            // Optimistically remove it from local state to hide it instantly
+            setItems(prev => prev.filter((_, i) => i !== index));
+
             // Attempt to delete physical file from Supabase
             if (url.includes("/storage/v1/object/public/media/")) {
                 await fetch("/api/upload", {
@@ -195,7 +184,13 @@ export function Gallery({ images, projectId, blockIndex }: GalleryProps) {
             const res = await fetch("/api/content/remove", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ projectId, type: "galleryImage", blockIndex, imageIndex: index }),
+                body: JSON.stringify({ 
+                    projectId, 
+                    type: "galleryImage", 
+                    blockIndex, 
+                    imageIndex: index,
+                    revalidatePath: window.location.pathname
+                }),
             });
             if (res.ok) {
                 router.refresh();
@@ -270,15 +265,33 @@ export function Gallery({ images, projectId, blockIndex }: GalleryProps) {
                     </SortableContext>
 
                     {isEditMode && (
-                        <div className={styles.addWrapper}>
-                            <button
-                                onClick={handleAddImage}
-                                disabled={isAdding}
-                                className={styles.addImageBtn}
-                            >
-                                {isAdding ? "Přidávám..." : "+ Přidat fotku"}
-                            </button>
-                        </div>
+                        <figure key={`extra-slot-${items.length}`} className={styles.galleryItem}>
+                            <div className={styles.imageWrapper}>
+                                <EditableImage
+                                    src="/images/black.png"
+                                    alt="Přidat nový obrázek"
+                                    path={`blocks.${blockIndex}.data.${items.length}.url`}
+                                    projectId={projectId}
+                                    onBeforeUpload={async () => {
+                                        const res = await fetch("/api/content/add", {
+                                            method: "POST",
+                                            headers: { "Content-Type": "application/json" },
+                                            body: JSON.stringify({ projectId, type: "galleryImage", blockIndex, revalidatePath: window.location.pathname }),
+                                        });
+                                        if (!res.ok) throw new Error("Nepodařilo se vytvořit slot v galerii");
+                                    }}
+                                    onUploadSuccess={(url) => {
+                                        // Optimistically add the new uploaded image to the local list,
+                                        // so that the next empty slot remounts clean!
+                                        setItems(prev => [
+                                            ...prev,
+                                            { id: Date.now().toString(), url, caption: "" }
+                                        ]);
+                                        router.refresh();
+                                    }}
+                                />
+                            </div>
+                        </figure>
                     )}
                 </div>
             </DndContext>

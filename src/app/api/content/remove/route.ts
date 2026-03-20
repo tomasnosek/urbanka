@@ -73,15 +73,19 @@ export async function POST(request: Request) {
             throw updateError;
         }
 
-        // Revalidate only the specific project page
-        const { data: municipality } = await supabase
-            .from("municipalities")
-            .select("slug")
-            .eq("id", project.municipality_id)
-            .single();
+        // Revalidate specific path if provided, otherwise fallback to lookup
+        if (body.revalidatePath) {
+            revalidatePath(body.revalidatePath);
+        } else {
+            const { data: municipality } = await supabase
+                .from("municipalities")
+                .select("slug")
+                .eq("id", project.municipality_id)
+                .single();
 
-        if (municipality) {
-            revalidatePath(`/${municipality.slug}/${project.slug}`);
+            if (municipality) {
+                revalidatePath(`/${municipality.slug}/${project.slug}`);
+            }
         }
 
         return NextResponse.json({ success: true, content });
