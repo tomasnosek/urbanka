@@ -25,16 +25,17 @@ export async function PATCH(request: NextRequest) {
 
         const supabase = await createServerSupabase();
 
-        // Fetch current project to revalidate routes AND to inspect content for specific column syncs
+        // Fetch current project for revalidation
         const { data: projectData } = await supabase
             .from("projects")
-            .select("slug, municipality_id, content")
+            .select("slug, municipality_id")
             .eq("id", projectId)
             .single();
 
         let titleUpdated = false;
 
         if (path === "root") {
+            // Full content replacement
             const { error } = await supabase
                 .from("projects")
                 .update({ content: value })
@@ -47,8 +48,23 @@ export async function PATCH(request: NextRequest) {
                     { status: 500 }
                 );
             }
+        } else if (path === "project.title") {
+            // Direct DB column update — title is the single source of truth
+            const { error } = await supabase
+                .from("projects")
+                .update({ title: value })
+                .eq("id", projectId);
+
+            if (error) {
+                console.error("Title column update error:", error);
+                return NextResponse.json(
+                    { error: error.message },
+                    { status: 500 }
+                );
+            }
+            titleUpdated = true;
         } else {
-            // Build the JSONB path array for jsonb_set
+            // Generic JSONB content update
             const pathParts = path.split(".");
 
             const { error } = await supabase.rpc("update_project_content", {
@@ -64,33 +80,9 @@ export async function PATCH(request: NextRequest) {
                     { status: 500 }
                 );
             }
-
-            // Sync main database project 'title' column if the hero section's title was updated
-            if (
-                pathParts[0] === "blocks" &&
-                pathParts[2] === "data" &&
-                pathParts[3] === "title"
-            ) {
-                const blockIndex = parseInt(pathParts[1], 10);
-                if (
-                    !isNaN(blockIndex) &&
-                    projectData?.content?.blocks?.[blockIndex]?.type === "hero"
-                ) {
-                    const { error: titleUpdateError } = await supabase
-                        .from("projects")
-                        .update({ title: value })
-                        .eq("id", projectId);
-                    
-                    if (titleUpdateError) {
-                        console.error("Title column update error:", titleUpdateError);
-                    } else {
-                        titleUpdated = true;
-                    }
-                }
-            }
         }
 
-        // Revalidate only the specific project page
+        // Revalidate caches
         if (projectData) {
             const { data: municipality } = await supabase
                 .from("municipalities")
@@ -99,9 +91,8 @@ export async function PATCH(request: NextRequest) {
                 .single();
 
             if (municipality) {
-                // Revalidate the specific project page explicitly
                 revalidatePath(`/${municipality.slug}/${projectData.slug}`);
-                // If title changed, revalidate the whole municipality layout to catch next/prev links on sibling pages
+                // Title change affects project lists, next/prev links on sibling pages
                 if (titleUpdated) {
                     revalidatePath(`/${municipality.slug}`, "layout");
                 }

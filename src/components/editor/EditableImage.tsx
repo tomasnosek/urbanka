@@ -7,6 +7,7 @@
 import { useRef, useCallback, useState, useEffect } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useEditMode } from "@/components/editor/EditModeContext";
+import { useToast } from "@/components/ui/ToastContext";
 import styles from "./Editor.module.css";
 
 const PLACEHOLDER = "/images/black.png";
@@ -45,6 +46,7 @@ export function EditableImage({
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [currentSrc, setCurrentSrc] = useState(src);
     const [uploading, setUploading] = useState(false);
+    const { showToast } = useToast();
 
     const canEdit = isAdmin && isEditMode;
     const hasImage = currentSrc && currentSrc !== PLACEHOLDER;
@@ -87,11 +89,14 @@ export function EditableImage({
 
                 if (res.ok) {
                     setCurrentSrc(PLACEHOLDER);
+                    showToast("success", "Obrázek smazán");
                 } else {
                     console.error("Content delete failed:", await res.text());
+                    showToast("error", "Nepodařilo se smazat obrázek");
                 }
             } catch (err) {
                 console.error("Delete error:", err);
+                showToast("error", "Chyba při mazání obrázku");
             }
         },
         [canEdit, hasImage, projectId, path, currentSrc]
@@ -162,11 +167,14 @@ export function EditableImage({
                     const { url } = await res.json();
                     setCurrentSrc(url);
                     if (onUploadSuccess) onUploadSuccess(url);
+                    showToast("success", "Obrázek nahrán");
                 } else {
                     console.error("Upload failed:", await res.text());
+                    showToast("error", "Nepodařilo se nahrát obrázek");
                 }
             } catch (err) {
                 console.error("Upload error:", err);
+                showToast("error", "Chyba při nahrávání");
             } finally {
                 setUploading(false);
                 if (fileInputRef.current) fileInputRef.current.value = "";

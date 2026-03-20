@@ -8,6 +8,7 @@ import { FeedbackForm } from "@/components/project/FeedbackForm";
 import { EditorToolbar } from "@/components/editor/EditorToolbar";
 import { EditorDock } from "@/components/editor/EditorDock";
 import { BlocksContainer } from "@/components/editor/BlocksContainer";
+import { ToastProvider } from "@/components/ui/ToastContext";
 import {
     getMunicipality,
     getProject,
@@ -97,6 +98,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     const nextProject = municipalityProjects.find((p) => p.id === next?.id);
 
     return (
+        <ToastProvider>
         <div className={styles.page}>
             <Header municipalityName={municipality.name} />
             <main className={styles.main}>
@@ -104,6 +106,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     initialBlocks={blocks}
                     meta={meta}
                     projectId={project.id}
+                    projectTitle={project.title}
                 />
 
                 <div className="layout-wrap">
@@ -122,5 +125,6 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             <EditorToolbar projectId={project.id} />
             <EditorDock projectId={project.id} />
         </div>
+        </ToastProvider>
     );
 }
