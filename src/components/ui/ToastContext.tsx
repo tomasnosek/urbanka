@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useCallback, useState, type ReactNode } from "react";
+import { createContext, useContext, useCallback, useState, useMemo, type ReactNode } from "react";
 import { Toast, type ToastStatus } from "./Toast";
 
 interface ToastContextValue {
@@ -24,10 +24,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         setMessage(newMessage);
     }, []);
 
+    // Memoize context value to prevent re-rendering ALL consumers
+    // when only status/message change (which only affects the Toast component)
+    const contextValue = useMemo(() => ({ showToast }), [showToast]);
+
     return (
-        <ToastContext.Provider value={{ showToast }}>
+        <ToastContext.Provider value={contextValue}>
             {children}
             <Toast status={status} message={message} />
         </ToastContext.Provider>
     );
 }
+
