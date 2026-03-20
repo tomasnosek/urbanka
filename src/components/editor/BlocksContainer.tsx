@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { HeroSection } from "@/components/project/HeroSection";
 import { StatsBar } from "@/components/project/StatsBar";
 import { ContentBlock } from "@/components/project/ContentBlock";
@@ -22,6 +22,14 @@ export function BlocksContainer({ initialBlocks, meta, projectId }: BlocksContai
     const [blocks, setBlocks] = useState(initialBlocks);
     const [toastStatus, setToastStatus] = useState<ToastStatus>("idle");
     const [toastMessage, setToastMessage] = useState<string | undefined>();
+
+
+    // Sync with server updates (e.g., after router.refresh() fetches new data)
+    // We stringify the blocks to ensure we only sync when the actual content changes, 
+    // avoiding unnecessary re-renders from simple reference changes.
+    useEffect(() => {
+        setBlocks(initialBlocks);
+    }, [JSON.stringify(initialBlocks)]);
 
     const showToast = useCallback((status: ToastStatus, message?: string) => {
         setToastStatus(status);

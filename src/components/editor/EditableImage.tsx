@@ -4,7 +4,7 @@
 
 "use client";
 
-import { useRef, useCallback, useState } from "react";
+import { useRef, useCallback, useState, useEffect } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useEditMode } from "@/components/editor/EditModeContext";
 import styles from "./Editor.module.css";
@@ -24,6 +24,10 @@ interface EditableImageProps {
     className?: string;
     /** Additional class name for the wrapper */
     wrapperClassName?: string;
+    /** Optional callback executed before uploading starts. Used to e.g. create a database entry first. */
+    onBeforeUpload?: () => Promise<void>;
+    /** Optional callback executed after successful upload. */
+    onUploadSuccess?: (url: string) => void;
 }
 
 export function EditableImage({
@@ -33,6 +37,8 @@ export function EditableImage({
     projectId,
     className,
     wrapperClassName,
+    onBeforeUpload,
+    onUploadSuccess,
 }: EditableImageProps) {
     const { isAdmin } = useAuth();
     const { isEditMode } = useEditMode();
@@ -42,6 +48,11 @@ export function EditableImage({
 
     const canEdit = isAdmin && isEditMode;
     const hasImage = currentSrc && currentSrc !== PLACEHOLDER;
+
+    // Sync state if props change (e.g., from server revalidation)
+    useEffect(() => {
+        setCurrentSrc(src);
+    }, [src]);
 
     const handleClick = useCallback(() => {
         if (!canEdit) return;
@@ -94,6 +105,10 @@ export function EditableImage({
             setUploading(true);
 
             try {
+                if (onBeforeUpload) {
+                    await onBeforeUpload();
+                }
+
                 // Determine dimensions for max 800px height
                 const img = new Image();
                 const objectUrl = URL.createObjectURL(file);
@@ -136,6 +151,7 @@ export function EditableImage({
                 formData.append("file", optimizedBlob, "image.webp");
                 formData.append("projectId", projectId);
                 formData.append("path", path);
+                formData.append("revalidatePath", window.location.pathname);
 
                 const res = await fetch("/api/upload", {
                     method: "POST",
@@ -145,6 +161,7 @@ export function EditableImage({
                 if (res.ok) {
                     const { url } = await res.json();
                     setCurrentSrc(url);
+                    if (onUploadSuccess) onUploadSuccess(url);
                 } else {
                     console.error("Upload failed:", await res.text());
                 }
