@@ -8,6 +8,49 @@ import { revalidatePath } from "next/cache";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { JsonUpdateSchema } from "@/lib/validations";
 
+/** Converts a Czech title to a base URL-safe slug */
+function toBaseSlug(title: string): string {
+    return title
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+}
+
+/**
+ * Generates a unique slug for a project within its municipality.
+ * If `rekonstrukce-osvetleni` already exists, returns `rekonstrukce-osvetleni-2`, etc.
+ * The first occurrence always gets the clean slug (no suffix).
+ */
+async function generateUniqueSlug(
+    supabase: any,
+    title: string,
+    municipalityId: string,
+    currentProjectId: string
+): Promise<string> {
+    const base = toBaseSlug(title);
+
+    // Fetch all slugs in this municipality that start with the base slug
+    const { data: existing } = await supabase
+        .from("projects")
+        .select("slug")
+        .eq("municipality_id", municipalityId)
+        .neq("id", currentProjectId)
+        .ilike("slug", `${base}%`);
+
+    const existingSlugs = new Set((existing ?? []).map((r: any) => r.slug));
+
+    if (!existingSlugs.has(base)) return base;
+
+    // Find the next available counter starting from 2
+    let counter = 2;
+    while (existingSlugs.has(`${base}-${counter}`)) {
+        counter++;
+    }
+    return `${base}-${counter}`;
+}
+
 export async function PATCH(request: NextRequest) {
     try {
         const body = await request.json();
@@ -69,9 +112,20 @@ export async function PATCH(request: NextRequest) {
             }
         } else if (path === "project.title") {
             // Direct DB column update — title is the single source of truth
+            // Regenerate slug with dedup counter logic
+            const { data: projectMeta } = await supabase
+                .from("projects")
+                .select("municipality_id")
+                .eq("id", projectId)
+                .single();
+
+            const slug = projectMeta
+                ? await generateUniqueSlug(supabase, value, projectMeta.municipality_id, projectId)
+                : toBaseSlug(value);
+
             const { error } = await supabase
                 .from("projects")
-                .update({ title: value })
+                .update({ title: value, slug })
                 .eq("id", projectId);
 
             if (error) {

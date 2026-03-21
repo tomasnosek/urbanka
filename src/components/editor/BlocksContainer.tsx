@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { HeroSection } from "@/components/project/HeroSection";
 import { StatsBar } from "@/components/project/StatsBar";
 import { ContentBlock } from "@/components/project/ContentBlock";
@@ -22,9 +22,6 @@ interface BlocksContainerProps {
 }
 
 // ─── Block Registry ────────────────────────────────────────────────────────────
-// Each block type maps to a render function that receives the common context.
-// Adding a new block type = one new entry here, zero changes to the JSX below.
-
 type RenderFn = (ctx: {
     data: any;
     projectId: string;
@@ -92,8 +89,12 @@ const BLOCK_REGISTRY: Record<string, {
 export function BlocksContainer({ initialBlocks, meta, projectId, projectTitle }: BlocksContainerProps) {
     const [blocks, setBlocks] = useState(initialBlocks);
     const { showToast } = useToast();
+    // Prevent server re-sync from overwriting our optimistic state during an in-flight operation
+    const isOperating = useRef(false);
 
     useEffect(() => {
+        // Skip sync if we are in the middle of an optimistic update
+        if (isOperating.current) return;
         setBlocks(initialBlocks);
     }, [JSON.stringify(initialBlocks)]);
 
@@ -101,6 +102,11 @@ export function BlocksContainer({ initialBlocks, meta, projectId, projectTitle }
         const newIndex = direction === "up" ? blockIndex - 1 : blockIndex + 1;
         if (newIndex < 0 || newIndex >= blocks.length) return;
 
+        // Snapshot before change for potential rollback
+        const previous = [...blocks];
+
+        // Optimistic update
+        isOperating.current = true;
         const reordered = [...blocks];
         const [moved] = reordered.splice(blockIndex, 1);
         reordered.splice(newIndex, 0, moved);
@@ -116,18 +122,22 @@ export function BlocksContainer({ initialBlocks, meta, projectId, projectTitle }
             if (res.ok) {
                 showToast("success");
             } else {
-                setBlocks(blocks);
+                setBlocks(previous);
                 showToast("error", "Nepodařilo se přesunout sekci");
             }
         } catch {
-            setBlocks(blocks);
+            setBlocks(previous);
             showToast("error", "Chyba při ukládání");
+        } finally {
+            isOperating.current = false;
         }
     }, [blocks, projectId, showToast]);
 
     const handleDelete = useCallback(async (blockIndex: number) => {
         const previous = [...blocks];
         const updated = blocks.filter((_, i) => i !== blockIndex);
+
+        isOperating.current = true;
         setBlocks(updated);
 
         showToast("saving");
@@ -146,6 +156,8 @@ export function BlocksContainer({ initialBlocks, meta, projectId, projectTitle }
         } catch {
             setBlocks(previous);
             showToast("error", "Chyba při mazání");
+        } finally {
+            isOperating.current = false;
         }
     }, [blocks, projectId, showToast]);
 
