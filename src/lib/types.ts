@@ -38,9 +38,22 @@ export interface StatItem {
     value: string;
 }
 
+export interface MayorVariant1 {
+    variant: "variant-1";
+    quote: string;
+}
+
+export interface MayorVariant2 {
+    variant: "variant-2";
+    quote: string;
+    imageUrl?: string;
+}
+
+export type MayorBlockData = MayorVariant1 | MayorVariant2;
+
 export interface Block<T = any> {
     id: string;
-    type: "hero" | "stats" | "contentBlockLeft" | "contentBlockRight" | "timeline" | "gallery";
+    type: "hero" | "stats" | "contentBlockLeft" | "contentBlockRight" | "timeline" | "gallery" | "mayor";
     data: T;
 }
 

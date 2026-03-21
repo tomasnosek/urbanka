@@ -5,7 +5,7 @@
     border: var(--border);
     border-radius: var(--radius);
     background-color: var(--color-surface);
-    margin-bottom: var(--space-16);
+    margin: var(--section-padding) 0;
 }
 
 @media (min-width: 768px) {

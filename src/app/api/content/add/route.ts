@@ -96,6 +96,17 @@ export async function POST(request: Request) {
                 type: "gallery",
                 data: []
             });
+        } else if (type === "mayorBlock") {
+            const variant = body.variant || "variant-1";
+            content.blocks.push({
+                id: crypto.randomUUID(),
+                type: "mayor",
+                data: {
+                    quote: "At Interpositive we blend artistry with technology to craft",
+                    imageUrl: variant === "variant-2" ? "/images/black.png" : undefined,
+                    variant: variant
+                }
+            });
         } else if (type === "galleryImage") {
             const { blockIndex } = body;
             if (blockIndex === undefined || !content.blocks[blockIndex]) {

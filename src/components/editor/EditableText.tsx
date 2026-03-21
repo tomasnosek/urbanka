@@ -4,7 +4,7 @@
 
 "use client";
 
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useEditMode } from "@/components/editor/EditModeContext";
@@ -39,6 +39,7 @@ export function EditableText({
     const ref = useRef<HTMLElement>(null);
     const { showToast } = useToast();
     const router = useRouter();
+    const [isSaving, setIsSaving] = useState(false);
 
     const handleBlur = useCallback(async () => {
         const el = ref.current;
@@ -51,6 +52,7 @@ export function EditableText({
         // Skip if unchanged
         if (newValue === value) return;
 
+        setIsSaving(true);
         try {
             const res = await fetch("/api/content", {
                 method: "PATCH",
@@ -74,6 +76,9 @@ export function EditableText({
             console.error("Save error:", err);
             showToast("error", "Chyba při ukládání");
             if (el) el.textContent = value;
+        } finally {
+            // Reset saving state after animation duration (800ms)
+            setTimeout(() => setIsSaving(false), 800);
         }
     }, [value, path, projectId, multiline, showToast, router]);
 
@@ -83,7 +88,7 @@ export function EditableText({
     return (
         <Component
             ref={ref}
-            className={`${className ?? ""} ${canEdit ? styles.editable : ""}`}
+            className={`${className ?? ""} ${canEdit ? styles.editable : ""} ${isSaving ? styles.editableSaving : ""}`}
             contentEditable={canEdit}
             suppressContentEditableWarning={canEdit}
             onBlur={canEdit ? handleBlur : undefined}

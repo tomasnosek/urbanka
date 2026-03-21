@@ -1,14 +1,19 @@
 import { notFound } from "next/navigation";
 import { Metadata, ResolvingMetadata } from "next";
-export const dynamic = 'force-dynamic';
+// Revalidate cached version every 60 seconds for public visitors.
+// Admin requests bypass the cache by setting cookies.get('sb-*') which
+// will force Next.js to mark this page as dynamic for that session.
+export const revalidate = 60;
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ProjectNav } from "@/components/project/ProjectNav";
 import { FeedbackForm } from "@/components/project/FeedbackForm";
+import { SubscribeForm } from "@/components/project/SubscribeForm";
 import { EditorToolbar } from "@/components/editor/EditorToolbar";
 import { EditorDock } from "@/components/editor/EditorDock";
 import { BlocksContainer } from "@/components/editor/BlocksContainer";
 import { ToastProvider } from "@/components/ui/ToastContext";
+import { DialogProvider } from "@/components/ui/DialogContext";
 import {
     getMunicipality,
     getProject,
@@ -99,6 +104,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
     return (
         <ToastProvider>
+        <DialogProvider>
         <div className={styles.page}>
             <Header municipalityName={municipality.name} />
             <main className={styles.main}>
@@ -120,11 +126,16 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 <div className="layout-wrap">
                     <FeedbackForm projectId={project.id} />
                 </div>
+
+                <div className="layout-wrap">
+                    <SubscribeForm projectId={project.id} />
+                </div>
             </main>
             <Footer municipalityName={municipality.name} />
             <EditorToolbar projectId={project.id} />
             <EditorDock projectId={project.id} />
         </div>
+        </DialogProvider>
         </ToastProvider>
     );
 }

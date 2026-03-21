@@ -1,5 +1,6 @@
 .timeline {
-    margin-bottom: var(--space-16);
+    padding-top: var(--section-padding);
+    padding-bottom: var(--section-padding);
 }
 
 .sectionTitle {
