@@ -21,6 +21,17 @@
     background: rgba(132, 169, 140, 0.04);
 }
 
+.editableSaving {
+    outline-color: var(--color-sage) !important;
+    outline-style: solid !important;
+    animation: savePulse 0.8s ease-out forwards;
+}
+
+@keyframes savePulse {
+    0%   { background: rgba(132, 169, 140, 0.15); }
+    100% { background: rgba(132, 169, 140, 0.0); }
+}
+
 /* --- Editable image overlay --- */
 .editableImageWrapper {
     position: relative;

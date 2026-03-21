@@ -8,6 +8,7 @@ import { Timeline } from "@/components/project/Timeline";
 import { Gallery } from "@/components/project/Gallery";
 import { MayorSection } from "@/components/project/MayorSection";
 import { SectionWrapper } from "@/components/editor/SectionWrapper";
+import { BlockErrorBoundary } from "@/components/editor/BlockErrorBoundary";
 import { useToast } from "@/components/ui/ToastContext";
 
 interface BlocksContainerProps {
@@ -20,61 +21,115 @@ interface BlocksContainerProps {
     projectTitle: string;
 }
 
+// ─── Block Registry ────────────────────────────────────────────────────────────
+// Each block type maps to a render function that receives the common context.
+// Adding a new block type = one new entry here, zero changes to the JSX below.
+
+type RenderFn = (ctx: {
+    data: any;
+    projectId: string;
+    blockIndex: number;
+    meta?: any;
+    projectTitle?: string;
+}) => React.ReactNode;
+
+const BLOCK_REGISTRY: Record<string, {
+    wrapper?: "layout-wrap" | "layout-wrap-overflow";
+    render: RenderFn;
+}> = {
+    hero: {
+        render: ({ data, projectId, blockIndex, meta, projectTitle }) => (
+            <HeroSection
+                title={projectTitle ?? ""}
+                lead={data.lead}
+                imageUrl={data.imageUrl}
+                imageCaption={data.imageCaption}
+                status={meta.status}
+                updateDate={meta.updateDate}
+                projectId={projectId}
+                blockIndex={blockIndex}
+            />
+        ),
+    },
+    stats: {
+        wrapper: "layout-wrap",
+        render: ({ data, projectId, blockIndex }) => (
+            <StatsBar stats={data} projectId={projectId} blockIndex={blockIndex} />
+        ),
+    },
+    contentBlockLeft: {
+        wrapper: "layout-wrap",
+        render: ({ data, projectId, blockIndex }) => (
+            <ContentBlock block={data} index={1} projectId={projectId} blockIndex={blockIndex} />
+        ),
+    },
+    contentBlockRight: {
+        wrapper: "layout-wrap",
+        render: ({ data, projectId, blockIndex }) => (
+            <ContentBlock block={data} index={0} projectId={projectId} blockIndex={blockIndex} />
+        ),
+    },
+    timeline: {
+        wrapper: "layout-wrap-overflow",
+        render: ({ data, projectId, blockIndex }) =>
+            data?.length > 0 ? (
+                <Timeline items={data} projectId={projectId} blockIndex={blockIndex} />
+            ) : null,
+    },
+    gallery: {
+        render: ({ data, projectId, blockIndex }) => (
+            <Gallery images={data} projectId={projectId} blockIndex={blockIndex} />
+        ),
+    },
+    mayor: {
+        wrapper: "layout-wrap",
+        render: ({ data, projectId, blockIndex }) => (
+            <MayorSection block={data} projectId={projectId} blockIndex={blockIndex} />
+        ),
+    },
+};
+
 export function BlocksContainer({ initialBlocks, meta, projectId, projectTitle }: BlocksContainerProps) {
     const [blocks, setBlocks] = useState(initialBlocks);
     const { showToast } = useToast();
 
-    // Sync with server updates (e.g., after router.refresh() fetches new data)
     useEffect(() => {
         setBlocks(initialBlocks);
     }, [JSON.stringify(initialBlocks)]);
 
-    // --- Optimistic Move ---
     const handleMove = useCallback(async (blockIndex: number, direction: "up" | "down") => {
         const newIndex = direction === "up" ? blockIndex - 1 : blockIndex + 1;
         if (newIndex < 0 || newIndex >= blocks.length) return;
 
-        // 1. Optimistic: swap instantly
         const reordered = [...blocks];
         const [moved] = reordered.splice(blockIndex, 1);
         reordered.splice(newIndex, 0, moved);
         setBlocks(reordered);
 
-        // 2. Save to DB in background
         showToast("saving");
         try {
             const res = await fetch("/api/content/reorder", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    projectId,
-                    path: "blocks",
-                    oldIndex: blockIndex,
-                    newIndex,
-                }),
+                body: JSON.stringify({ projectId, path: "blocks", oldIndex: blockIndex, newIndex }),
             });
             if (res.ok) {
                 showToast("success");
             } else {
-                // Revert on failure
                 setBlocks(blocks);
                 showToast("error", "Nepodařilo se přesunout sekci");
             }
         } catch {
-            // Revert on error
             setBlocks(blocks);
             showToast("error", "Chyba při ukládání");
         }
     }, [blocks, projectId, showToast]);
 
-    // --- Optimistic Delete ---
     const handleDelete = useCallback(async (blockIndex: number) => {
-        // 1. Optimistic: remove instantly
         const previous = [...blocks];
         const updated = blocks.filter((_, i) => i !== blockIndex);
         setBlocks(updated);
 
-        // 2. Save to DB in background
         showToast("saving");
         try {
             const res = await fetch("/api/content/remove", {
@@ -96,73 +151,37 @@ export function BlocksContainer({ initialBlocks, meta, projectId, projectTitle }
 
     return (
         <>
-            {blocks.map((block: any, index: number) => (
-                <SectionWrapper
-                    key={block.id}
-                    blockId={block.id}
-                    blockIndex={index}
-                    totalBlocks={blocks.length}
-                    onMove={(direction) => handleMove(index, direction)}
-                    onDelete={() => handleDelete(index)}
-                >
-                    {block.type === "hero" && (
-                        <HeroSection
-                            title={projectTitle}
-                            lead={block.data.lead}
-                            imageUrl={block.data.imageUrl}
-                            imageCaption={block.data.imageCaption}
-                            status={meta.status}
-                            updateDate={meta.updateDate}
-                            projectId={projectId}
-                            blockIndex={index}
-                        />
-                    )}
-                    {block.type === "stats" && (
-                        <div className="layout-wrap">
-                            <StatsBar
-                                stats={block.data}
-                                projectId={projectId}
-                                blockIndex={index}
-                            />
-                        </div>
-                    )}
-                    {(block.type === "contentBlockLeft" || block.type === "contentBlockRight") && (
-                        <div className="layout-wrap">
-                            <ContentBlock
-                                block={block.data}
-                                index={block.type === "contentBlockLeft" ? 1 : 0}
-                                projectId={projectId}
-                                blockIndex={index}
-                            />
-                        </div>
-                    )}
-                    {block.type === "timeline" && block.data?.length > 0 && (
-                        <div className="layout-wrap-overflow">
-                            <Timeline
-                                items={block.data}
-                                projectId={projectId}
-                                blockIndex={index}
-                            />
-                        </div>
-                    )}
-                    {block.type === "gallery" && (
-                        <Gallery
-                            images={block.data}
-                            projectId={projectId}
-                            blockIndex={index}
-                        />
-                    )}
-                    {block.type === "mayor" && (
-                        <div className="layout-wrap">
-                            <MayorSection
-                                block={block.data}
-                                projectId={projectId}
-                                blockIndex={index}
-                            />
-                        </div>
-                    )}
-                </SectionWrapper>
-            ))}
+            {blocks.map((block: any, index: number) => {
+                const entry = BLOCK_REGISTRY[block.type];
+                if (!entry) return null;
+
+                const rendered = entry.render({
+                    data: block.data,
+                    projectId,
+                    blockIndex: index,
+                    meta,
+                    projectTitle,
+                });
+
+                const content = entry.wrapper
+                    ? <div className={entry.wrapper}>{rendered}</div>
+                    : rendered;
+
+                return (
+                    <SectionWrapper
+                        key={block.id}
+                        blockId={block.id}
+                        blockIndex={index}
+                        totalBlocks={blocks.length}
+                        onMove={(direction) => handleMove(index, direction)}
+                        onDelete={() => handleDelete(index)}
+                    >
+                        <BlockErrorBoundary blockType={block.type}>
+                            {content}
+                        </BlockErrorBoundary>
+                    </SectionWrapper>
+                );
+            })}
         </>
     );
 }

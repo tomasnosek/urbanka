@@ -25,12 +25,31 @@ export async function PATCH(request: NextRequest) {
 
         const supabase = await createServerSupabase();
 
-        // Fetch current project for revalidation
+        // Fetch current project for revalidation + history snapshot
         const { data: projectData } = await supabase
             .from("projects")
-            .select("slug, municipality_id")
+            .select("slug, municipality_id, content, title")
             .eq("id", projectId)
             .single();
+
+        // ── Content History Snapshot ────────────────────────────────────────
+        // Save the current state before we overwrite anything.
+        // The table must exist: see /supabase/migrations/add_content_history.sql
+        if (projectData?.content) {
+            await supabase
+                .from("content_history")
+                .insert({
+                    project_id: projectId,
+                    content: projectData.content,
+                    changed_path: path,
+                })
+                .then(({ error }) => {
+                    if (error) {
+                        // Non-fatal: history write failure shouldn't block the update
+                        console.warn("[content_history] Failed to write snapshot:", error.message);
+                    }
+                });
+        }
 
         let titleUpdated = false;
 

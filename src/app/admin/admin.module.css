@@ -138,3 +138,63 @@
     background-color: #fce4e4;
     color: #c92a2a;
 }
+
+/* --- Feedback specific --- */
+.badgeRow {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+}
+
+.feedbackMessage {
+    padding: var(--space-4);
+    background-color: var(--color-bg);
+    border-radius: var(--radius);
+    font-size: var(--text-base);
+    line-height: var(--leading-relaxed);
+    white-space: pre-wrap;
+    color: var(--color-text);
+}
+
+.itemActions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.actionButtons {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.actionBtnSecondary {
+    background: none;
+    border: 1px solid var(--color-sage);
+    color: var(--color-sage);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: var(--text-sm);
+    transition: all var(--transition-fast);
+}
+
+.actionBtnSecondary:hover {
+    background: var(--color-sage-light);
+}
+
+.actionBtnDanger {
+    background: none;
+    border: 1px solid #c92a2a;
+    color: #c92a2a;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: var(--text-sm);
+    transition: all var(--transition-fast);
+}
+
+.actionBtnDanger:hover {
+    background: #fce4e4;
+}
