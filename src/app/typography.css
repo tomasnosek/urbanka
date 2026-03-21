@@ -28,3 +28,39 @@
   letter-spacing: 0;
   color: var(--color-text, #000);
 }
+
+.text-h3 {
+  font-family: var(--font-heading);
+  font-size: 2em; /* 32px based on 16px base */
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.04em;
+  color: var(--color-text, #000);
+}
+
+.text-h4 {
+  font-family: var(--font-heading);
+  font-size: 1.5em; /* 24px */
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: -0.03em;
+  color: var(--color-text, #000);
+}
+
+.text-button {
+  font-family: var(--font-heading);
+  font-size: 1em; /* 16px */
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.03em;
+  color: var(--color-text, #000);
+}
+
+.text-subtle {
+  font-family: var(--font-sans);
+  font-size: 0.875rem; /* 14px */
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  color: var(--color-text-secondary);
+}

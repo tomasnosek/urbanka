@@ -9,6 +9,7 @@ import { EditorToolbar } from "@/components/editor/EditorToolbar";
 import { EditorDock } from "@/components/editor/EditorDock";
 import { BlocksContainer } from "@/components/editor/BlocksContainer";
 import { ToastProvider } from "@/components/ui/ToastContext";
+import { DialogProvider } from "@/components/ui/DialogContext";
 import {
     getMunicipality,
     getProject,
@@ -99,6 +100,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
     return (
         <ToastProvider>
+        <DialogProvider>
         <div className={styles.page}>
             <Header municipalityName={municipality.name} />
             <main className={styles.main}>
@@ -125,6 +127,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             <EditorToolbar projectId={project.id} />
             <EditorDock projectId={project.id} />
         </div>
+        </DialogProvider>
         </ToastProvider>
     );
 }

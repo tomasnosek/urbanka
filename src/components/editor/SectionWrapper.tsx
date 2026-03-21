@@ -1,6 +1,7 @@
 "use client";
 
 import { useEditMode } from "./EditModeContext";
+import { useDialog } from "@/components/ui/DialogContext";
 import styles from "./Editor.module.css";
 
 interface SectionWrapperProps {
@@ -21,14 +22,17 @@ export function SectionWrapper({
     onDelete,
 }: SectionWrapperProps) {
     const { isEditMode } = useEditMode();
+    const { showConfirm } = useDialog();
 
     if (!isEditMode) {
         return <>{children}</>;
     }
 
     const handleDeleteClick = () => {
-        if (!confirm("Opravdu chcete odstranit tuto sekci?")) return;
-        onDelete();
+        showConfirm({
+            title: "Opravdu chcete odstranit tuto sekci?",
+            onConfirm: onDelete,
+        });
     };
 
     return (

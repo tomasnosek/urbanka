@@ -90,6 +90,7 @@
   /* --wrapper-max-width: není nastaveno — na mobilu zabírá plnou šířku */
   --wrapper-padding: var(--space-4);  /* 16px — minimální odsazení od okrajů na mobilu */
   --header-height: 60px;
+  --section-padding: 120px;
 
   /* Transitions */
   --transition-fast: 150ms ease;

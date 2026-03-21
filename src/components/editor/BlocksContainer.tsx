@@ -6,6 +6,7 @@ import { StatsBar } from "@/components/project/StatsBar";
 import { ContentBlock } from "@/components/project/ContentBlock";
 import { Timeline } from "@/components/project/Timeline";
 import { Gallery } from "@/components/project/Gallery";
+import { MayorSection } from "@/components/project/MayorSection";
 import { SectionWrapper } from "@/components/editor/SectionWrapper";
 import { useToast } from "@/components/ui/ToastContext";
 
@@ -150,6 +151,15 @@ export function BlocksContainer({ initialBlocks, meta, projectId, projectTitle }
                             projectId={projectId}
                             blockIndex={index}
                         />
+                    )}
+                    {block.type === "mayor" && (
+                        <div className="layout-wrap">
+                            <MayorSection
+                                block={block.data}
+                                projectId={projectId}
+                                blockIndex={index}
+                            />
+                        </div>
                     )}
                 </SectionWrapper>
             ))}
