@@ -336,3 +336,39 @@
     height: 100%;
     object-fit: cover;
 }
+
+/* --- Image Resize Handle --- */
+.resizeHandle {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 12px;
+    background-color: var(--color-sage);
+    cursor: ns-resize;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+}
+
+.resizeHandle::after {
+    content: "";
+    width: 32px;
+    height: 4px;
+    border-radius: 2px;
+    background-color: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.editableImageWrapper:hover .resizeHandle,
+.resizeHandle.isDragging {
+    opacity: 1;
+}
+
+.isDraggingWrapper .imageOverlay {
+    opacity: 0 !important;
+    pointer-events: none !important;
+}

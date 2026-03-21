@@ -120,7 +120,7 @@ export function Timeline({ items, projectId, blockIndex }: TimelineProps) {
     return (
         <section className={styles.timeline}>
             <div className={styles.timelineHeader}>
-                <h2 className={styles.sectionTitle}>Průběh stavby</h2>
+                <h2 className={`${styles.sectionTitle} text-h2`}>Průběh stavby</h2>
                 {isEditMode && (
                     <button
                         className={styles.addRowBtn}

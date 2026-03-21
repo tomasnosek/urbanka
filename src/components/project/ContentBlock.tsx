@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { EditableText } from "@/components/editor/EditableText";
 import { EditableImage } from "@/components/editor/EditableImage";
 import styles from "./ContentBlock.module.css";
@@ -14,6 +15,11 @@ interface ContentBlockProps {
 
 export function ContentBlock({ block, index, projectId, blockIndex }: ContentBlockProps) {
     const reverse = block.imagePosition === "left";
+    const [dragHeight, setDragHeight] = useState<number | undefined>(block.imageHeight);
+
+    useEffect(() => {
+        setDragHeight(block.imageHeight);
+    }, [block.imageHeight]);
 
     return (
         <section
@@ -25,7 +31,7 @@ export function ContentBlock({ block, index, projectId, blockIndex }: ContentBlo
                     path={`blocks.${blockIndex}.data.title`}
                     projectId={projectId}
                     as="h2"
-                    className={styles.title}
+                    className={`${styles.title} text-h2`}
                 />
                 <EditableText
                     value={block.content}
@@ -36,12 +42,15 @@ export function ContentBlock({ block, index, projectId, blockIndex }: ContentBlo
                     multiline
                 />
             </div>
-            <div className={styles.image}>
+            <div className={styles.image} style={{ height: dragHeight ? `${dragHeight}px` : undefined }}>
                 <EditableImage
                     src={block.imageUrl}
                     alt={block.title}
                     path={`blocks.${blockIndex}.data.imageUrl`}
                     projectId={projectId}
+                    initialHeight={block.imageHeight}
+                    heightPath={`blocks.${blockIndex}.data.imageHeight`}
+                    onHeightChange={setDragHeight}
                 />
             </div>
         </section>

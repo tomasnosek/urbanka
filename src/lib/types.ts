@@ -30,6 +30,7 @@ export interface ContentBlock {
     content: string;
     imageUrl: string;
     imagePosition: "left" | "right";
+    imageHeight?: number;
 }
 
 export interface StatItem {

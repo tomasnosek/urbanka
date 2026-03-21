@@ -46,7 +46,7 @@ export function HeroSection({
                     path="project.title"
                     projectId={projectId}
                     as="h1"
-                    className={styles.title}
+                    className={`${styles.title} text-h1`}
                 />
                 <EditableText
                     value={lead}
@@ -60,17 +60,10 @@ export function HeroSection({
             <figure className={styles.heroImage}>
                 <EditableImage
                     src={imageUrl}
-                    alt={imageCaption}
+                    alt={title}
                     path={`blocks.${blockIndex}.data.imageUrl`}
                     projectId={projectId}
                 />
-                <figcaption className={styles.caption}>
-                    <EditableText
-                        value={imageCaption}
-                        path={`blocks.${blockIndex}.data.imageCaption`}
-                        projectId={projectId}
-                    />
-                </figcaption>
             </figure>
         </section>
     );
