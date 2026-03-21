@@ -99,6 +99,11 @@ export function EditorToolbar({ projectId, municipalityId, municipalitySlug }: E
                     </button>
                 )}
 
+                {/* Admin panel link */}
+                <a href="/admin" className={styles.toolbarButton}>
+                    Admin panel
+                </a>
+
                 <button
                     className={styles.toolbarButton}
                     onClick={logout}

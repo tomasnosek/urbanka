@@ -21,13 +21,19 @@ export async function PUT(request: NextRequest) {
             return NextResponse.json({ error: "ID a název jsou povinné." }, { status: 400 });
         }
 
-        // Generate slug from name
-        const slug = name
+        // Generate slug: "nazev" or "nazev-psč" for uniqueness
+        const baseSlug = name
             .toLowerCase()
             .normalize("NFD")
             .replace(/[\u0300-\u036f]/g, "")
             .replace(/[^a-z0-9]+/g, "-")
             .replace(/^-+|-+$/g, "");
+
+        const pscSlug = postal_code
+            ? postal_code.replace(/\s+/g, "")
+            : null;
+
+        const slug = pscSlug ? `${baseSlug}-${pscSlug}` : baseSlug;
 
         const { error } = await supabase
             .from("municipalities")
