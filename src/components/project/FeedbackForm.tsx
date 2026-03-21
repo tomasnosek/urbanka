@@ -46,7 +46,7 @@ export function FeedbackForm({ projectId }: FeedbackFormProps) {
 
     return (
         <section className={styles.section}>
-            <h2 className={styles.title}>Máte dotaz nebo připomínku?</h2>
+            <h2 className={`${styles.title} text-h2`}>Máte dotaz nebo připomínku?</h2>
             <p className={styles.subtitle}>
                 Napište nám. Vaše zpráva bude doručena správci portálu.
             </p>

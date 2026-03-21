@@ -39,18 +39,7 @@
 }
 
 .title {
-    font-size: var(--text-4xl);
-    font-weight: var(--font-semibold);
-    color: var(--color-text);
-    letter-spacing: -0.02em;
-    line-height: var(--leading-tight);
     margin-bottom: var(--space-6);
-}
-
-@media (min-width: 768px) {
-    .title {
-        font-size: var(--text-5xl);
-    }
 }
 
 .lead {
@@ -80,12 +69,4 @@
     .heroImage img {
         height: 480px;
     }
-}
-
-.caption {
-    padding: var(--space-3) var(--space-4);
-    font-size: var(--text-sm);
-    color: var(--color-text-muted);
-    border-top: var(--border);
-    background-color: var(--color-surface);
 }

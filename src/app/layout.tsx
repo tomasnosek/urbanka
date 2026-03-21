@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Inter, Libre_Baskerville } from "next/font/google";
+import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { EditModeProvider } from "@/components/editor/EditModeContext";
 import { Analytics } from "@vercel/analytics/next";
@@ -10,9 +11,8 @@ const inter = Inter({
   subsets: ["latin", "latin-ext"],
 });
 
-const libreBaskerville = Libre_Baskerville({
-  weight: ["400", "700"],
-  subsets: ["latin", "latin-ext"],
+const ranade = localFont({
+  src: "../../public/Ranade-Medium.otf",
   variable: "--font-heading",
 });
 
@@ -29,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="cs">
-      <body className={`${inter.variable} ${libreBaskerville.variable}`}>
+      <body className={`${inter.variable} ${ranade.variable}`}>
         <AuthProvider>
           <EditModeProvider>{children}</EditModeProvider>
         </AuthProvider>

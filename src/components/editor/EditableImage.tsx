@@ -5,6 +5,7 @@
 "use client";
 
 import { useRef, useCallback, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useEditMode } from "@/components/editor/EditModeContext";
 import { useToast } from "@/components/ui/ToastContext";
@@ -29,6 +30,12 @@ interface EditableImageProps {
     onBeforeUpload?: () => Promise<void>;
     /** Optional callback executed after successful upload. */
     onUploadSuccess?: (url: string) => void;
+    /** Initial generic height of the image wrapper */
+    initialHeight?: number;
+    /** JSONB path to the height field, e.g. "hero.imageHeight" */
+    heightPath?: string;
+    /** Callback when height is being dragged */
+    onHeightChange?: (height: number) => void;
 }
 
 export function EditableImage({
@@ -40,13 +47,24 @@ export function EditableImage({
     wrapperClassName,
     onBeforeUpload,
     onUploadSuccess,
+    initialHeight,
+    heightPath,
+    onHeightChange,
 }: EditableImageProps) {
     const { isAdmin } = useAuth();
     const { isEditMode } = useEditMode();
+    const router = useRouter();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [currentSrc, setCurrentSrc] = useState(src);
     const [uploading, setUploading] = useState(false);
     const { showToast } = useToast();
+
+    // Resizing state
+    const [height, setHeight] = useState<number | undefined>(initialHeight);
+    const isDragging = useRef(false);
+    const [isDraggingState, setIsDraggingState] = useState(false);
+    const startY = useRef(0);
+    const startHeight = useRef(0);
 
     const canEdit = isAdmin && isEditMode;
     const hasImage = currentSrc && currentSrc !== PLACEHOLDER;
@@ -55,6 +73,71 @@ export function EditableImage({
     useEffect(() => {
         setCurrentSrc(src);
     }, [src]);
+
+    useEffect(() => {
+        setHeight(initialHeight);
+    }, [initialHeight]);
+
+    const handlePointerMove = useCallback((e: PointerEvent) => {
+        if (!isDragging.current) return;
+        const deltaY = e.clientY - startY.current;
+        const newHeight = Math.max(100, Math.round(startHeight.current + deltaY));
+        setHeight(newHeight);
+        if (onHeightChange) onHeightChange(newHeight);
+    }, [onHeightChange]);
+
+    const handlePointerUp = useCallback(
+        async (e: PointerEvent) => {
+            if (!isDragging.current) return;
+            isDragging.current = false;
+            setIsDraggingState(false);
+            document.removeEventListener("pointermove", handlePointerMove);
+            document.removeEventListener("pointerup", handlePointerUp);
+            document.body.style.userSelect = "";
+
+            if (!heightPath) return;
+
+            const deltaY = e.clientY - startY.current;
+            const finalHeight = Math.max(100, Math.round(startHeight.current + deltaY));
+
+            try {
+                const res = await fetch("/api/content", {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        projectId,
+                        path: heightPath,
+                        value: finalHeight,
+                    }),
+                });
+                if (res.ok) {
+                    showToast("success", "Výška upravena");
+                    router.refresh();
+                } else {
+                    showToast("error", "Chyba uložení výšky");
+                }
+            } catch (err) {
+                showToast("error", "Chyba ukládání");
+            }
+        },
+        [heightPath, projectId, handlePointerMove, showToast, router]
+    );
+
+    const handlePointerDown = useCallback(
+        (e: React.PointerEvent) => {
+            if (!canEdit || !heightPath) return;
+            e.stopPropagation();
+            isDragging.current = true;
+            setIsDraggingState(true);
+            startY.current = e.clientY;
+            startHeight.current = height || (e.currentTarget.parentElement?.offsetHeight || 320);
+
+            document.addEventListener("pointermove", handlePointerMove);
+            document.addEventListener("pointerup", handlePointerUp);
+            document.body.style.userSelect = "none";
+        },
+        [canEdit, heightPath, height, handlePointerMove, handlePointerUp]
+    );
 
     const handleClick = useCallback(() => {
         if (!canEdit) return;
@@ -90,6 +173,7 @@ export function EditableImage({
                 if (res.ok) {
                     setCurrentSrc(PLACEHOLDER);
                     showToast("success", "Obrázek smazán");
+                    router.refresh();
                 } else {
                     console.error("Content delete failed:", await res.text());
                     showToast("error", "Nepodařilo se smazat obrázek");
@@ -99,7 +183,7 @@ export function EditableImage({
                 showToast("error", "Chyba při mazání obrázku");
             }
         },
-        [canEdit, hasImage, projectId, path, currentSrc]
+        [canEdit, hasImage, projectId, path, currentSrc, router]
     );
 
     const handleFileChange = useCallback(
@@ -168,6 +252,7 @@ export function EditableImage({
                     setCurrentSrc(url);
                     if (onUploadSuccess) onUploadSuccess(url);
                     showToast("success", "Obrázek nahrán");
+                    router.refresh();
                 } else {
                     console.error("Upload failed:", await res.text());
                     showToast("error", "Nepodařilo se nahrát obrázek");
@@ -180,13 +265,14 @@ export function EditableImage({
                 if (fileInputRef.current) fileInputRef.current.value = "";
             }
         },
-        [projectId, path]
+        [projectId, path, onBeforeUpload, onUploadSuccess, showToast, router]
     );
 
     return (
         <div
-            className={`${wrapperClassName ?? ""} ${canEdit ? styles.editableImageWrapper : ""} ${!hasImage ? styles.emptyPlaceholderWrapper : ""}`}
+            className={`${wrapperClassName ?? ""} ${canEdit ? styles.editableImageWrapper : ""} ${!hasImage ? styles.emptyPlaceholderWrapper : ""} ${isDraggingState ? styles.isDraggingWrapper : ""}`}
             onClick={hasImage ? undefined : handleClick}
+            style={height ? { height: `${height}px` } : undefined}
         >
             <img
                 src={currentSrc}
@@ -230,6 +316,13 @@ export function EditableImage({
                         className={styles.hiddenInput}
                         onChange={handleFileChange}
                     />
+                    {heightPath && (
+                        <div
+                            className={`${styles.resizeHandle} ${isDraggingState ? styles.isDragging : ""}`}
+                            onPointerDown={handlePointerDown}
+                            onClick={(e) => { e.stopPropagation(); }}
+                        />
+                    )}
                 </>
             )}
         </div>

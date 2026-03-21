@@ -5,6 +5,7 @@
 "use client";
 
 import { useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useEditMode } from "@/components/editor/EditModeContext";
 import { useToast } from "@/components/ui/ToastContext";
@@ -37,6 +38,7 @@ export function EditableText({
     const { isEditMode } = useEditMode();
     const ref = useRef<HTMLElement>(null);
     const { showToast } = useToast();
+    const router = useRouter();
 
     const handleBlur = useCallback(async () => {
         const el = ref.current;
@@ -62,6 +64,7 @@ export function EditableText({
 
             if (res.ok) {
                 showToast("success");
+                router.refresh();
             } else {
                 console.error("Failed to save:", await res.text());
                 showToast("error", "Nepodařilo se uložit");
@@ -72,7 +75,7 @@ export function EditableText({
             showToast("error", "Chyba při ukládání");
             if (el) el.textContent = value;
         }
-    }, [value, path, projectId, multiline, showToast]);
+    }, [value, path, projectId, multiline, showToast, router]);
 
     const canEdit = isAdmin && isEditMode;
     const Component = Tag as any;

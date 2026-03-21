@@ -1,0 +1,30 @@
+/* =============================================
+   URBANKA — Typography Manual
+   ============================================= */
+
+.text-h1 {
+  font-family: var(--font-heading);
+  font-size: 4em;
+  font-weight: 400;
+  line-height: 1; /* 100% line height */
+  letter-spacing: -0.05em; /* kerning -5% */
+  color: var(--color-text, #000); /* Použití lokální proměnné s black fallbackem */
+}
+
+.text-h2 {
+  font-family: var(--font-heading);
+  font-size: 3em;
+  font-weight: 400;
+  line-height: 1.1; /* 110% line height */
+  letter-spacing: -0.04em; /* kerning -4% */
+  color: var(--color-text, #000);
+}
+
+.text-regular {
+  font-family: var(--font-sans);
+  font-size: 1em;
+  font-weight: 400;
+  line-height: 1.5; /* 150% line height */
+  letter-spacing: 0;
+  color: var(--color-text, #000);
+}
