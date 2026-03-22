@@ -4,7 +4,7 @@ import { TimelineItem } from "@/lib/types";
 import { EditableText } from "@/components/editor/EditableText";
 import { EditableImage } from "@/components/editor/EditableImage";
 import { useEditMode } from "@/components/editor/EditModeContext";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./Timeline.module.css";
 
@@ -12,6 +12,80 @@ interface TimelineProps {
     items: TimelineItem[];
     projectId: string;
     blockIndex: number;
+}
+
+function ScrollableGallery({ children, isEditMode }: { children: React.ReactNode; isEditMode: boolean }) {
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const [startX, setStartX] = useState(0);
+    const [scrollLeft, setScrollLeft] = useState(0);
+
+    const handlePointerDown = (e: React.PointerEvent) => {
+        if (!scrollRef.current) return;
+        setIsDragging(true);
+        setStartX(e.pageX - scrollRef.current.offsetLeft);
+        setScrollLeft(scrollRef.current.scrollLeft);
+    };
+
+    useEffect(() => {
+        if (isEditMode && scrollRef.current) {
+            setTimeout(() => {
+                if (scrollRef.current) {
+                    scrollRef.current.scrollLeft = scrollRef.current.scrollWidth;
+                }
+            }, 100);
+        }
+    }, [isEditMode, children]);
+
+    const handlePointerMove = (e: React.PointerEvent) => {
+        if (!isDragging || !scrollRef.current) return;
+        e.preventDefault();
+        const x = e.pageX - scrollRef.current.offsetLeft;
+        const walk = (x - startX) * 2;
+        scrollRef.current.scrollLeft = scrollLeft - walk;
+    };
+
+    const handlePointerUp = () => {
+        setIsDragging(false);
+    };
+
+    const scrollBy = (amount: number) => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollBy({ left: amount, behavior: "smooth" });
+        }
+    };
+
+    return (
+        <div className={styles.galleryWrapper}>
+            <div 
+                className={`${styles.gallery} scrollbar-hide ${isDragging ? styles.isDragging : ""}`}
+                ref={scrollRef}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerLeave={handlePointerUp}
+            >
+                {children}
+            </div>
+
+            <div className={styles.galleryControls}>
+                <button 
+                    className={styles.scrollBtn}
+                    onClick={() => scrollBy(-300)}
+                    aria-label="Posunout doleva"
+                >
+                    ←
+                </button>
+                <button 
+                    className={styles.scrollBtn}
+                    onClick={() => scrollBy(300)}
+                    aria-label="Posunout doprava"
+                >
+                    →
+                </button>
+            </div>
+        </div>
+    );
 }
 
 export function Timeline({ items, projectId, blockIndex }: TimelineProps) {
@@ -183,7 +257,7 @@ export function Timeline({ items, projectId, blockIndex }: TimelineProps) {
 
                             {/* Horizontal gallery */}
                             {(item.images.length > 0 || isEditMode) && (
-                                <div className={`${styles.gallery} scrollbar-hide`}>
+                                <ScrollableGallery isEditMode={isEditMode}>
                                     {item.images.map((img, j) => (
                                         <figure key={j} className={styles.galleryItem}>
                                             <EditableImage
@@ -202,13 +276,15 @@ export function Timeline({ items, projectId, blockIndex }: TimelineProps) {
                                                     ✕ Zrušit celou položku
                                                 </button>
                                             )}
-                                            <figcaption className={styles.galleryCaption}>
-                                                <EditableText
-                                                    value={img.caption}
-                                                    path={`blocks.${blockIndex}.data.${i}.images.${j}.caption`}
-                                                    projectId={projectId}
-                                                />
-                                            </figcaption>
+                                            {(isEditMode || (img.caption && img.caption !== "Nový obrázek")) && (
+                                                <figcaption className={styles.galleryCaption}>
+                                                    <EditableText
+                                                        value={img.caption}
+                                                        path={`blocks.${blockIndex}.data.${i}.images.${j}.caption`}
+                                                        projectId={projectId}
+                                                    />
+                                                </figcaption>
+                                            )}
                                         </figure>
                                     ))}
                                     {isEditMode && (
@@ -220,7 +296,7 @@ export function Timeline({ items, projectId, blockIndex }: TimelineProps) {
                                             {isAdding === i ? "Přidávám..." : "+ Přidat fotku"}
                                         </button>
                                     )}
-                                </div>
+                                </ScrollableGallery>
                             )}
                         </div>
                     </div>

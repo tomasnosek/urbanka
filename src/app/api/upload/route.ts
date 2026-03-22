@@ -9,44 +9,76 @@ import { revalidatePath } from "next/cache";
 
 export async function POST(request: NextRequest) {
     try {
-        const formData = await request.formData();
-        const file = formData.get("file") as File | null;
-        const projectId = formData.get("projectId") as string;
-        const path = formData.get("path") as string;
-        const pathToRevalidate = formData.get("revalidatePath") as string | null;
+        const contentType = request.headers.get("content-type") || "";
+        let bytes: ArrayBuffer;
+        let fileType: string;
+        let fallbackExt: string;
+        let projectId: string;
+        let path: string;
+        let pathToRevalidate: string | null = null;
+        let filenameUrlPrefix = "";
 
-        if (!file || !projectId || !path) {
-            return NextResponse.json(
-                { error: "Missing file, projectId, or path" },
-                { status: 400 }
-            );
-        }
+        // Handle URL upload
+        if (contentType.includes("application/json")) {
+            const body = await request.json();
+            projectId = body.projectId;
+            path = body.path;
+            pathToRevalidate = body.revalidatePath || null;
+            
+            if (!body.imageUrl || !projectId || !path) {
+                return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+            }
 
-        // Validate file type
-        if (!file.type.startsWith("image/")) {
-            return NextResponse.json(
-                { error: "Only image files are allowed" },
-                { status: 400 }
-            );
+            const imageResponse = await fetch(body.imageUrl);
+            if (!imageResponse.ok) {
+                return NextResponse.json({ error: "Failed to fetch image" }, { status: 400 });
+            }
+
+            bytes = await imageResponse.arrayBuffer();
+            fileType = imageResponse.headers.get("content-type") || "image/jpeg";
+            fallbackExt = fileType.split("/").pop() || "jpg";
+            filenameUrlPrefix = "url-";
+        } else {
+            // Check FormData
+            const formData = await request.formData();
+            const file = formData.get("file") as File | null;
+            projectId = formData.get("projectId") as string;
+            path = formData.get("path") as string;
+            pathToRevalidate = formData.get("revalidatePath") as string | null;
+
+            if (!file || !projectId || !path) {
+                return NextResponse.json(
+                    { error: "Missing file, projectId, or path" },
+                    { status: 400 }
+                );
+            }
+
+            if (!file.type.startsWith("image/")) {
+                return NextResponse.json(
+                    { error: "Only image files are allowed" },
+                    { status: 400 }
+                );
+            }
+
+            bytes = await file.arrayBuffer();
+            fileType = file.type;
+            fallbackExt = file.name.split(".").pop() ?? "jpg";
         }
 
         const supabase = await createServerSupabase();
-
-        // Use the extension matching the incoming file type if possible
-        const isWebp = file.type === "image/webp";
-        const fallbackExt = file.name.split(".").pop() ?? "jpg";
+        
+        const isWebp = fileType === "image/webp";
         const ext = isWebp ? "webp" : fallbackExt;
 
         // Generate unique filename
         const timestamp = Date.now();
-        const filename = `${projectId}/${timestamp}.${ext}`;
+        const filename = `${projectId}/${filenameUrlPrefix}${timestamp}.${ext}`;
 
         // Upload to Supabase Storage
-        const bytes = await file.arrayBuffer();
         const { error: uploadError } = await supabase.storage
             .from("media")
             .upload(filename, Buffer.from(bytes), {
-                contentType: file.type,
+                contentType: fileType,
                 upsert: true,
             });
 

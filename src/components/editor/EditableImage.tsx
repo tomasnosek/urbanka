@@ -268,6 +268,45 @@ export function EditableImage({
         [projectId, path, onBeforeUpload, onUploadSuccess, showToast, router]
     );
 
+    const handleUrlUpload = useCallback(
+        async (imageUrl: string) => {
+            setUploading(true);
+            try {
+                if (onBeforeUpload) {
+                    await onBeforeUpload();
+                }
+
+                const res = await fetch("/api/upload", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        imageUrl,
+                        projectId,
+                        path,
+                        revalidatePath: window.location.pathname
+                    })
+                });
+
+                if (res.ok) {
+                    const { url } = await res.json();
+                    setCurrentSrc(url);
+                    if (onUploadSuccess) onUploadSuccess(url);
+                    showToast("success", "Obrázek zpracován a nahrán");
+                    router.refresh();
+                } else {
+                    console.error("URL Upload failed:", await res.text());
+                    showToast("error", "Nepodařilo se stáhnout obrázek");
+                }
+            } catch (err) {
+                console.error("URL Upload error:", err);
+                showToast("error", "Chyba při zpracování adresy");
+            } finally {
+                setUploading(false);
+            }
+        },
+        [projectId, path, onBeforeUpload, onUploadSuccess, showToast, router]
+    );
+
     return (
         <div
             className={`${wrapperClassName ?? ""} ${canEdit ? styles.editableImageWrapper : ""} ${!hasImage ? styles.emptyPlaceholderWrapper : ""} ${isDraggingState ? styles.isDraggingWrapper : ""}`}
@@ -277,6 +316,7 @@ export function EditableImage({
             <img
                 src={currentSrc}
                 alt={alt}
+                draggable={false}
                 className={`${className ?? ""} ${!hasImage ? styles.emptyPlaceholderImage : ""}`}
             />
 
@@ -288,15 +328,29 @@ export function EditableImage({
                                 Nahrávám…
                             </span>
                         ) : (
-                            <button
-                                className={styles.overlayActionBtn}
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleClick();
-                                }}
-                            >
-                                📷 Nahrát jiný obrázek
-                            </button>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                                <button
+                                    className={styles.overlayActionBtn}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleClick();
+                                    }}
+                                >
+                                    📷 Nahrát ze zařízení
+                                </button>
+                                <button
+                                    className={styles.overlayActionBtn}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        const url = prompt("Zadejte URL adresu k obrázku:");
+                                        if (url) {
+                                            handleUrlUpload(url);
+                                        }
+                                    }}
+                                >
+                                    🔗 Vložit z URL
+                                </button>
+                            </div>
                         )}
 
                         {hasImage && !uploading && (
