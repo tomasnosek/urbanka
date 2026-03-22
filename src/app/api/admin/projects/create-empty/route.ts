@@ -46,7 +46,6 @@ export async function POST(request: Request) {
                     id: "hero-1",
                     type: "hero",
                     data: {
-                        title: "Název nového projektu",
                         lead: "Krátké shrnutí projektu nebo poutavý perex. Rozepište se o hlavních cílech a důvodech vzniku tohoto záměru.",
                         imageUrl: "/images/black.png",
                         imageCaption: "Ilustrační snímek",

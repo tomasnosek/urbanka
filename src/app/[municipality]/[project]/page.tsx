@@ -48,8 +48,8 @@ export async function generateMetadata(
     const municipalityName = municipality.name;
     const heroBlock = project.content.blocks.find((b: any) => b.type === "hero");
 
-    // Fallbacks
-    const title = heroBlock?.data?.title || project.title;
+    // Sources of truth:
+    const title = project.title;
     const description = heroBlock?.data?.lead || `Detailní informace o projektu ${project.title} v obci ${municipalityName}.`;
     
     // Dynamic OG Image URL (Next.js identifies opengraph-image.tsx automatically, but we set it here too)
