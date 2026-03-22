@@ -117,6 +117,8 @@ export function Timeline({ items, projectId, blockIndex }: TimelineProps) {
         }
     };
 
+    if ((!items || items.length === 0) && !isEditMode) return null;
+
     return (
         <section className={styles.timeline}>
             <div className={styles.timelineHeader}>

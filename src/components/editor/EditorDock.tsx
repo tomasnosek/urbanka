@@ -17,7 +17,7 @@ export function EditorDock({ projectId }: EditorDockProps) {
     // Only render the dock when in edit mode
     if (!isEditMode) return null;
 
-    const handleAdd = async (type: "contentBlockLeft" | "contentBlockRight" | "galleryBlock" | "mayorBlock", variant?: string) => {
+    const handleAdd = async (type: "contentBlockLeft" | "contentBlockRight" | "galleryBlock" | "mayorBlock" | "timelineBlock", variant?: string) => {
         try {
             setIsAdding(type);
             const res = await fetch("/api/content/add", {
@@ -60,6 +60,27 @@ export function EditorDock({ projectId }: EditorDockProps) {
                     </button>
                     <button className={styles.submenuItem} onClick={() => handleAdd("contentBlockRight")} disabled={isAdding !== null}>
                         Obrázek vpravo
+                    </button>
+                </div>
+            </div>
+
+            {/* Category: Časová osa */}
+            <div className={styles.dockCategory}>
+                <div className={styles.dockItem}>
+                    <div className={styles.dockIcon}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="7" y="4" width="2" height="16" rx="1" fill="var(--color-slate-400)" />
+                            <circle cx="8" cy="8" r="3" fill="var(--color-slate-300)" />
+                            <circle cx="8" cy="16" r="3" fill="var(--color-slate-300)" />
+                            <rect x="13" y="7" width="8" height="2" rx="1" fill="var(--color-slate-400)" />
+                            <rect x="13" y="15" width="8" height="2" rx="1" fill="var(--color-slate-400)" />
+                        </svg>
+                    </div>
+                    <span className={styles.dockLabel}>Časová osa</span>
+                </div>
+                <div className={styles.dockSubmenu}>
+                    <button className={styles.submenuItem} onClick={() => handleAdd("timelineBlock")} disabled={isAdding !== null}>
+                        Základní osa
                     </button>
                 </div>
             </div>
