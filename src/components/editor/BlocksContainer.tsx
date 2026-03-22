@@ -68,10 +68,9 @@ const BLOCK_REGISTRY: Record<string, {
     },
     timeline: {
         wrapper: "layout-wrap-overflow",
-        render: ({ data, projectId, blockIndex }) =>
-            data?.length > 0 ? (
-                <Timeline items={data} projectId={projectId} blockIndex={blockIndex} />
-            ) : null,
+        render: ({ data, projectId, blockIndex }) => (
+            <Timeline items={data || []} projectId={projectId} blockIndex={blockIndex} />
+        ),
     },
     gallery: {
         render: ({ data, projectId, blockIndex }) => (
