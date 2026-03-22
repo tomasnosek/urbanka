@@ -4,6 +4,7 @@ import { TimelineItem } from "@/lib/types";
 import { EditableText } from "@/components/editor/EditableText";
 import { EditableImage } from "@/components/editor/EditableImage";
 import { useEditMode } from "@/components/editor/EditModeContext";
+import { Lightbox } from "@/components/ui/Lightbox";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./Timeline.module.css";
@@ -95,6 +96,7 @@ export function Timeline({ items, projectId, blockIndex }: TimelineProps) {
     const [isAddingRow, setIsAddingRow] = useState(false);
     const [removingRow, setRemovingRow] = useState<number | null>(null);
     const [removingImage, setRemovingImage] = useState<string | null>(null);
+    const [lightboxData, setLightboxData] = useState<{ eventIndex: number, imageIndex: number } | null>(null);
 
     const handleAddRow = async () => {
         try {
@@ -265,6 +267,7 @@ export function Timeline({ items, projectId, blockIndex }: TimelineProps) {
                                                 alt={img.caption}
                                                 path={`blocks.${blockIndex}.data.${i}.images.${j}.url`}
                                                 projectId={projectId}
+                                                onImageClick={() => setLightboxData({ eventIndex: i, imageIndex: j })}
                                             />
                                             {isEditMode && (
                                                 <button
@@ -302,6 +305,15 @@ export function Timeline({ items, projectId, blockIndex }: TimelineProps) {
                     </div>
                 ))}
             </div>
+
+            {lightboxData !== null && items[lightboxData.eventIndex] && (
+                <Lightbox
+                    images={items[lightboxData.eventIndex].images.map((img) => ({ url: img.url, caption: img.caption }))}
+                    initialIndex={lightboxData.imageIndex}
+                    onClose={() => setLightboxData(null)}
+                    onIndexChange={(newIndex) => setLightboxData({ eventIndex: lightboxData.eventIndex, imageIndex: newIndex })}
+                />
+            )}
         </section>
     );
 }

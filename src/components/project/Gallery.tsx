@@ -4,6 +4,7 @@ import { TimelineImage } from "@/lib/types";
 import { EditableImage } from "@/components/editor/EditableImage";
 import { EditableText } from "@/components/editor/EditableText";
 import { useEditMode } from "@/components/editor/EditModeContext";
+import { Lightbox } from "@/components/ui/Lightbox";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -33,6 +34,7 @@ function SortableGalleryItem({
     blockIndex,
     isEditMode,
     onRemove,
+    onImageClick,
 }: {
     image: TimelineImage & { id: string };
     timelineIndex: number;
@@ -40,6 +42,7 @@ function SortableGalleryItem({
     blockIndex: number;
     isEditMode: boolean;
     onRemove: (index: number, url: string) => void;
+    onImageClick: (index: number) => void;
 }) {
     const {
         attributes,
@@ -69,6 +72,7 @@ function SortableGalleryItem({
                     alt={image.caption}
                     path={`blocks.${blockIndex}.data.${timelineIndex}.url`}
                     projectId={projectId}
+                    onImageClick={() => onImageClick(timelineIndex)}
                 />
                 
                 {isEditMode && (
@@ -128,6 +132,7 @@ export function Gallery({ images, projectId, blockIndex }: GalleryProps) {
     const { isEditMode } = useEditMode();
     const router = useRouter();
     const [removingImage, setRemovingImage] = useState<number | null>(null);
+    const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
     // Robust optimistic state sync:
     // We construct a hash of the *server* images to detect when the server actually caught up
@@ -260,6 +265,7 @@ export function Gallery({ images, projectId, blockIndex }: GalleryProps) {
                                 blockIndex={blockIndex}
                                 isEditMode={isEditMode}
                                 onRemove={handleRemoveImage}
+                                onImageClick={setLightboxIndex}
                             />
                         ))}
                     </SortableContext>
@@ -295,6 +301,15 @@ export function Gallery({ images, projectId, blockIndex }: GalleryProps) {
                     )}
                 </div>
             </DndContext>
+
+            {lightboxIndex !== null && (
+                <Lightbox
+                    images={items.map((img) => ({ url: img.url, caption: img.caption }))}
+                    initialIndex={lightboxIndex}
+                    onClose={() => setLightboxIndex(null)}
+                    onIndexChange={setLightboxIndex}
+                />
+            )}
         </section>
     );
 }

@@ -5,6 +5,7 @@
 "use client";
 
 import { useRef, useCallback, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useEditMode } from "@/components/editor/EditModeContext";
@@ -36,6 +37,8 @@ interface EditableImageProps {
     heightPath?: string;
     /** Callback when height is being dragged */
     onHeightChange?: (height: number) => void;
+    /** Inform the parent that user clicked the image natively (e.g. for lightbox) */
+    onImageClick?: () => void;
 }
 
 export function EditableImage({
@@ -50,6 +53,7 @@ export function EditableImage({
     initialHeight,
     heightPath,
     onHeightChange,
+    onImageClick,
 }: EditableImageProps) {
     const { isAdmin } = useAuth();
     const { isEditMode } = useEditMode();
@@ -318,6 +322,12 @@ export function EditableImage({
                 alt={alt}
                 draggable={false}
                 className={`${className ?? ""} ${!hasImage ? styles.emptyPlaceholderImage : ""}`}
+                onClick={() => {
+                    if (hasImage && !canEdit && onImageClick) {
+                        onImageClick();
+                    }
+                }}
+                style={{ cursor: hasImage && !canEdit && onImageClick ? "zoom-in" : undefined }}
             />
 
             {canEdit && (

@@ -71,6 +71,7 @@ export interface Project {
     title: string;
     slug: string;
     status: "draft" | "published" | "archived";
+    public_status: "Plánovaný" | "Staví se" | "Dokončený";
     total_cost: number;
     content: ProjectContent;
     source_pdf_url: string | null;

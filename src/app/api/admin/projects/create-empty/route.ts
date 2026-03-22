@@ -103,6 +103,7 @@ export async function POST(request: Request) {
                 title,
                 slug,
                 status: "draft",
+                public_status: "Plánovaný",
                 content: defaultContent,
             })
             .select()

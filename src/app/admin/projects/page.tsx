@@ -1,8 +1,10 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import styles from "../admin.module.css";
-import Link from "next/link";
 import { revalidatePath } from "next/cache";
+import Link from "next/link";
 import MunicipalitySelector from "./MunicipalitySelector";
+import { StatusSelectors } from "./StatusSelectors";
+import { DeleteProjectButton } from "./DeleteProjectButton";
 
 export const revalidate = 0;
 
@@ -17,6 +19,7 @@ export default async function ProjectsPage() {
             title,
             slug,
             status,
+            public_status,
             is_featured,
             municipality_id,
             created_at,
@@ -40,7 +43,30 @@ export default async function ProjectsPage() {
         const supabaseAdmin = await createServerSupabase();
         await supabaseAdmin.from("projects").update({ is_featured: !currentStatus }).eq("id", id);
         revalidatePath("/admin/projects");
-        revalidatePath("/");
+        revalidatePath("/", "layout");
+    }
+
+    async function updateStatus(formData: FormData) {
+        "use server";
+        const id = formData.get("id") as string;
+        const type = formData.get("type") as "status" | "public_status";
+        const value = formData.get("value") as string;
+        if (!id || !type || !value) return;
+
+        const supabaseAdmin = await createServerSupabase();
+        await supabaseAdmin.from("projects").update({ [type]: value, updated_at: new Date().toISOString() }).eq("id", id);
+        revalidatePath("/admin/projects");
+        revalidatePath("/", "layout");
+    }
+
+    async function deleteProject(formData: FormData) {
+        "use server";
+        const id = formData.get("id") as string;
+        if (!id) return;
+        const supabaseAdmin = await createServerSupabase();
+        await supabaseAdmin.from("projects").delete().eq("id", id);
+        revalidatePath("/admin/projects");
+        revalidatePath("/", "layout");
     }
 
     return (
@@ -97,9 +123,7 @@ export default async function ProjectsPage() {
                                 <div style={{ flex: 1 }}>
                                     <div className={styles.itemHeader}>
                                         <div className={styles.itemTitle}>{p.title}</div>
-                                        <span className={`${styles.badge} ${p.status === 'published' ? styles.badgePublished : p.status === 'archived' ? styles.badgeArchived : styles.badgeDraft}`}>
-                                            {p.status}
-                                        </span>
+                                        <StatusSelectors project={p} updateStatusAction={updateStatus} />
                                     </div>
                                     <div className={styles.itemMeta}>
                                         Obec:{" "}
@@ -110,10 +134,14 @@ export default async function ProjectsPage() {
                                         />
                                         {" "}• ID: {p.slug} • Vytvořeno: {new Date(p.created_at).toLocaleDateString("cs-CZ")}
                                     </div>
-                                    <div style={{ marginTop: "var(--space-2)" }}>
-                                        <Link href={`/${p.municipalities?.slug}/${p.slug}`} style={{ fontSize: "var(--text-sm)", color: "var(--color-sage)", fontWeight: "var(--font-medium)", textDecoration: "none" }}>
+                                    <div style={{ marginTop: "var(--space-2)", display: "flex", gap: "var(--space-2)" }}>
+                                        <Link href={`/${p.municipalities?.slug}/${p.slug}?edit=true`} className={styles.btnSecondary} style={{ fontSize: "var(--text-sm)", padding: "var(--space-1) var(--space-3)", display: "inline-block", textDecoration: "none" }}>
                                             Zobrazit a editovat obsah &rarr;
                                         </Link>
+                                        <form action={deleteProject}>
+                                            <input type="hidden" name="id" value={p.id} />
+                                            <DeleteProjectButton />
+                                        </form>
                                     </div>
                                 </div>
                             </div>

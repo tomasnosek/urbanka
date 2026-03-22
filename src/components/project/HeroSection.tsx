@@ -31,11 +31,7 @@ export function HeroSection({
                 <div className={styles.metaRow}>
                     <span className={styles.statusBadge}>
                         <span className={styles.statusDot} />
-                        <EditableText
-                            value={status}
-                            path="meta.status"
-                            projectId={projectId}
-                        />
+                        <span>{status}</span>
                     </span>
                     <span className={styles.updateDate}>
                         Aktualizováno {updateDate}
