@@ -19,6 +19,8 @@ interface BlocksContainerProps {
     };
     projectId: string;
     projectTitle: string;
+    publicStatus: string;
+    updatedAt: string;
 }
 
 // ─── Block Registry ────────────────────────────────────────────────────────────
@@ -28,6 +30,8 @@ type RenderFn = (ctx: {
     blockIndex: number;
     meta?: any;
     projectTitle?: string;
+    publicStatus?: string;
+    updatedAt?: string;
 }) => React.ReactNode;
 
 const BLOCK_REGISTRY: Record<string, {
@@ -35,14 +39,14 @@ const BLOCK_REGISTRY: Record<string, {
     render: RenderFn;
 }> = {
     hero: {
-        render: ({ data, projectId, blockIndex, meta, projectTitle }) => (
+        render: ({ data, projectId, blockIndex, projectTitle, publicStatus, updatedAt }) => (
             <HeroSection
                 title={projectTitle ?? ""}
                 lead={data.lead}
                 imageUrl={data.imageUrl}
                 imageCaption={data.imageCaption}
-                status={meta.status}
-                updateDate={meta.updateDate}
+                status={publicStatus ?? ""}
+                updateDate={updatedAt ?? ""}
                 projectId={projectId}
                 blockIndex={blockIndex}
             />
@@ -85,7 +89,7 @@ const BLOCK_REGISTRY: Record<string, {
     },
 };
 
-export function BlocksContainer({ initialBlocks, meta, projectId, projectTitle }: BlocksContainerProps) {
+export function BlocksContainer({ initialBlocks, meta, projectId, projectTitle, publicStatus, updatedAt }: BlocksContainerProps) {
     const [blocks, setBlocks] = useState(initialBlocks);
     const { showToast } = useToast();
     // Prevent server re-sync from overwriting our optimistic state during an in-flight operation
@@ -172,6 +176,8 @@ export function BlocksContainer({ initialBlocks, meta, projectId, projectTitle }
                     blockIndex: index,
                     meta,
                     projectTitle,
+                    publicStatus,
+                    updatedAt,
                 });
 
                 const content = entry.wrapper

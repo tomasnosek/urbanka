@@ -20,6 +20,7 @@ import {
     getAdjacentProjects,
     getProjectsByMunicipality,
 } from "@/lib/queries";
+import { createServerSupabase } from "@/lib/supabase-server";
 import styles from "./page.module.css";
 
 interface ProjectPageProps {
@@ -55,10 +56,10 @@ export async function generateMetadata(
     const ogImageUrl = `/${municipalitySlug}/${projectSlug}/opengraph-image`;
 
     return {
-        title: `${title} | ${municipalityName} | Urbanka`,
+        title: `Urbanka - ${title}`,
         description: description,
         openGraph: {
-            title: title,
+            title: `Urbanka - ${title}`,
             description: description,
             images: [
                 {
@@ -72,7 +73,7 @@ export async function generateMetadata(
         },
         twitter: {
             card: "summary_large_image",
-            title: `${title} | ${municipalityName}`,
+            title: `Urbanka - ${title}`,
             description: description,
             images: [ogImageUrl],
         },
@@ -97,6 +98,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
     const { meta, blocks = [] } = project.content;
 
+    // Check auth to render editor conditionally
+    const supabase = await createServerSupabase();
+    const { data: { user } } = await supabase.auth.getUser();
+    const isAdmin = !!user;
+
     // Get municipality slug for navigation
     const municipalityProjects = await getProjectsByMunicipality(municipality.id);
     const prevProject = municipalityProjects.find((p) => p.id === prev?.id);
@@ -113,6 +119,8 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     meta={meta}
                     projectId={project.id}
                     projectTitle={project.title}
+                    publicStatus={project.public_status!}
+                    updatedAt={new Date(project.updated_at).toLocaleDateString("cs-CZ")}
                 />
 
                 <div className="layout-wrap">
@@ -132,8 +140,8 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 </div>
             </main>
             <Footer municipalityName={municipality.name} />
-            <EditorToolbar projectId={project.id} />
-            <EditorDock projectId={project.id} />
+            {isAdmin && <EditorToolbar projectId={project.id} />}
+            {isAdmin && <EditorDock projectId={project.id} />}
         </div>
         </DialogProvider>
         </ToastProvider>

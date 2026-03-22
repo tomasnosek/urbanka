@@ -1,0 +1,8 @@
+[
+    { "id": "cost", "label": "Předpokládaná cena", "defaultPlaceholder": "0 Kč" },
+    { "id": "start", "label": "Zahájení", "defaultPlaceholder": "Neznámé" },
+    { "id": "end", "label": "Dokončení", "defaultPlaceholder": "Neznámé" },
+    { "id": "contractor", "label": "Zhotovitel", "defaultPlaceholder": "Nebyl vybrán" },
+    { "id": "architect", "label": "Architekt", "defaultPlaceholder": "Doplnit jméno" },
+    { "id": "grant", "label": "Dotace", "defaultPlaceholder": "Zatím ne" }
+]
