@@ -1,6 +1,7 @@
 "use client";
 
 import { useEditMode } from "@/components/editor/EditModeContext";
+import { useToast } from "@/components/ui/ToastContext";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./Editor.module.css";
@@ -12,6 +13,7 @@ interface EditorDockProps {
 export function EditorDock({ projectId }: EditorDockProps) {
     const { isEditMode } = useEditMode();
     const router = useRouter();
+    const { showToast } = useToast();
     const [isAdding, setIsAdding] = useState<string | null>(null);
 
     // Only render the dock when in edit mode
@@ -20,19 +22,25 @@ export function EditorDock({ projectId }: EditorDockProps) {
     const handleAdd = async (type: "contentBlockLeft" | "contentBlockRight" | "galleryBlock" | "mayorBlock" | "timelineBlock", variant?: string) => {
         try {
             setIsAdding(type);
+            window.dispatchEvent(new CustomEvent('optimistic-add-block'));
+            showToast("saving");
+
             const res = await fetch("/api/content/add", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ projectId, type, variant }),
             });
             if (res.ok) {
+                showToast("success");
                 router.refresh();
             } else {
-                alert("Nepodařilo se přidat blok.");
+                showToast("error", "Nepodařilo se přidat blok");
+                window.dispatchEvent(new CustomEvent('optimistic-add-error'));
             }
         } catch (error) {
             console.error(error);
-            alert("Chyba při přidávání bloku.");
+            showToast("error", "Chyba při přidávání bloku");
+            window.dispatchEvent(new CustomEvent('optimistic-add-error'));
         } finally {
             setIsAdding(null);
         }

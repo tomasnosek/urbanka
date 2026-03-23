@@ -4,6 +4,8 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { EditableText } from "@/components/editor/EditableText";
 import { useEditMode } from "@/components/editor/EditModeContext";
+import { useDialog } from "@/components/ui/DialogContext";
+import { useToast } from "@/components/ui/ToastContext";
 import { PROJECT_PROPERTIES } from "@/lib/projectProperties";
 import styles from "./StatsBar.module.css";
 import type { StatItem } from "@/lib/types";
@@ -106,11 +108,26 @@ function SortableStatItem({
 export function StatsBar({ stats, projectId, blockIndex }: StatsBarProps) {
     const { isEditMode } = useEditMode();
     const router = useRouter();
+    const { showConfirm } = useDialog();
+    const { showToast } = useToast();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isMutating, setIsMutating] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    const items = stats.map(s => s.label);
+    // Robust optimistic state sync for StatsBar
+    const serverHash = stats.map(s => s.label).join('|');
+    const [lastSyncedHash, setLastSyncedHash] = useState(serverHash);
+    const [itemsConfig, setItemsConfig] = useState(stats);
+    
+    useEffect(() => {
+        const currentServerHash = stats.map(s => s.label).join('|');
+        if (currentServerHash !== lastSyncedHash) {
+            setItemsConfig(stats);
+            setLastSyncedHash(currentServerHash);
+        }
+    }, [stats, lastSyncedHash]);
+
+    const items = itemsConfig.map(s => s.label);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -133,7 +150,7 @@ export function StatsBar({ stats, projectId, blockIndex }: StatsBarProps) {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const existingLabels = stats.map(s => s.label);
+    const existingLabels = itemsConfig.map(s => s.label);
     const availableProperties = PROJECT_PROPERTIES.filter(p => !existingLabels.includes(p.label));
 
     const handleAddStat = async (prop: typeof PROJECT_PROPERTIES[0]) => {
@@ -141,10 +158,12 @@ export function StatsBar({ stats, projectId, blockIndex }: StatsBarProps) {
         setIsMutating(true);
         setIsDropdownOpen(false);
 
-        const newStats = [...stats, { label: prop.label, value: prop.defaultPlaceholder }];
+        const newStats = [...itemsConfig, { label: prop.label, value: prop.defaultPlaceholder }];
+        setItemsConfig(newStats); // Optimistic UI
+        showToast("saving");
 
         try {
-            await fetch("/api/content", {
+            const res = await fetch("/api/content", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -153,9 +172,15 @@ export function StatsBar({ stats, projectId, blockIndex }: StatsBarProps) {
                     value: newStats,
                 }),
             });
-            router.refresh();
+            if (res.ok) {
+                showToast("success");
+                router.refresh();
+            } else {
+                showToast("error", "Nepodařilo se přidat údaj");
+            }
         } catch (e) {
             console.error("Error adding stat:", e);
+            showToast("error", "Nepodařilo se přidat údaj");
         } finally {
             setIsMutating(false);
         }
@@ -163,28 +188,40 @@ export function StatsBar({ stats, projectId, blockIndex }: StatsBarProps) {
 
     const handleRemoveStat = useCallback(async (indexToRemove: number) => {
         if (isMutating) return;
-        if (!confirm("Opravdu chcete odebrat tento údaj?")) return;
 
-        setIsMutating(true);
-        const newStats = stats.filter((_, i) => i !== indexToRemove);
+        showConfirm({
+            title: "Opravdu chcete odebrat tento údaj?",
+            onConfirm: async () => {
+                setIsMutating(true);
+                const newStats = itemsConfig.filter((_, i) => i !== indexToRemove);
+                setItemsConfig(newStats); // Optimistic UI
+                showToast("saving");
 
-        try {
-            await fetch("/api/content", {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    projectId,
-                    path: `blocks.${blockIndex}.data`,
-                    value: newStats,
-                }),
-            });
-            router.refresh();
-        } catch (e) {
-            console.error("Error removing stat:", e);
-        } finally {
-            setIsMutating(false);
-        }
-    }, [isMutating, stats, projectId, blockIndex, router]);
+                try {
+                    const res = await fetch("/api/content", {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            projectId,
+                            path: `blocks.${blockIndex}.data`,
+                            value: newStats,
+                        }),
+                    });
+                    if (res.ok) {
+                        showToast("success");
+                        router.refresh();
+                    } else {
+                        showToast("error", "Nepodařilo se odebrat údaj");
+                    }
+                } catch (e) {
+                    console.error("Error removing stat:", e);
+                    showToast("error", "Nepodařilo se odebrat údaj");
+                } finally {
+                    setIsMutating(false);
+                }
+            }
+        });
+    }, [isMutating, itemsConfig, projectId, blockIndex, router, showConfirm, showToast]);
 
     const handleDragEnd = async (event: DragEndEvent) => {
         const { active, over } = event;
@@ -194,11 +231,13 @@ export function StatsBar({ stats, projectId, blockIndex }: StatsBarProps) {
         const newIndex = items.indexOf(over.id as string);
         if (oldIndex === -1 || newIndex === -1) return;
 
-        const newStats = arrayMove(stats, oldIndex, newIndex);
+        const newStats = arrayMove(itemsConfig, oldIndex, newIndex);
+        setItemsConfig(newStats); // Optimistic UI
+        showToast("saving");
 
         setIsMutating(true);
         try {
-            await fetch("/api/content", {
+            const res = await fetch("/api/content", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -207,9 +246,15 @@ export function StatsBar({ stats, projectId, blockIndex }: StatsBarProps) {
                     value: newStats,
                 }),
             });
-            router.refresh();
+            if (res.ok) {
+                showToast("success");
+                router.refresh();
+            } else {
+                showToast("error", "Nepodařilo se přerovnat údaje");
+            }
         } catch (e) {
             console.error("Error reordering stats:", e);
+            showToast("error", "Nepodařilo se přerovnat údaje");
         } finally {
             setIsMutating(false);
         }
@@ -226,7 +271,7 @@ export function StatsBar({ stats, projectId, blockIndex }: StatsBarProps) {
                     items={items}
                     strategy={horizontalListSortingStrategy}
                 >
-                    {stats.map((stat, index) => (
+                    {itemsConfig.map((stat, index) => (
                         <SortableStatItem
                             key={stat.label}
                             stat={stat}

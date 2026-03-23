@@ -4,8 +4,10 @@ import { TimelineItem } from "@/lib/types";
 import { EditableText } from "@/components/editor/EditableText";
 import { EditableImage } from "@/components/editor/EditableImage";
 import { useEditMode } from "@/components/editor/EditModeContext";
+import { useDialog } from "@/components/ui/DialogContext";
+import { useToast } from "@/components/ui/ToastContext";
 import { Lightbox } from "@/components/ui/Lightbox";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./Timeline.module.css";
 
@@ -92,108 +94,170 @@ function ScrollableGallery({ children, isEditMode }: { children: React.ReactNode
 export function Timeline({ items, projectId, blockIndex }: TimelineProps) {
     const { isEditMode } = useEditMode();
     const router = useRouter();
+    const { showConfirm } = useDialog();
+    const { showToast } = useToast();
     const [isAdding, setIsAdding] = useState<number | null>(null);
     const [isAddingRow, setIsAddingRow] = useState(false);
     const [removingRow, setRemovingRow] = useState<number | null>(null);
     const [removingImage, setRemovingImage] = useState<string | null>(null);
     const [lightboxData, setLightboxData] = useState<{ eventIndex: number, imageIndex: number } | null>(null);
 
+    // Robust optimistic state sync
+    const serverHash = (items || []).map(i => `${i.id}-${i.title}-${i.images.length}`).join('|');
+    const [lastSyncedHash, setLastSyncedHash] = useState(serverHash);
+    const [itemsConfig, setItemsConfig] = useState(items || []);
+
+    useEffect(() => {
+        const currentServerHash = (items || []).map(i => `${i.id}-${i.title}-${i.images.length}`).join('|');
+        if (currentServerHash !== lastSyncedHash) {
+            setItemsConfig(items || []);
+            setLastSyncedHash(currentServerHash);
+        }
+    }, [items, lastSyncedHash]);
+
     const handleAddRow = async () => {
         try {
             setIsAddingRow(true);
+            
+            // Optimistic Row Addition
+            const tempId = `temp-${Date.now()}`;
+            setItemsConfig(prev => [...prev, {
+                id: tempId,
+                date: "Nový rok",
+                title: "Nová událost",
+                description: "Popis nové události",
+                images: []
+            }]);
+
+            showToast("saving");
+
             const res = await fetch("/api/content/add", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ projectId, type: "timelineRow", blockIndex }),
             });
             if (res.ok) {
+                showToast("success");
                 router.refresh();
             } else {
-                alert("Nepodařilo se přidat událost.");
+                showToast("error", "Nepodařilo se přidat událost.");
+                // Sync back on error
+                setItemsConfig(items || []);
             }
         } catch (error) {
             console.error(error);
-            alert("Chyba při přidávání události.");
+            showToast("error", "Chyba při přidávání události.");
+            setItemsConfig(items || []);
         } finally {
             setIsAddingRow(false);
         }
     };
 
-    const handleRemoveRow = async (index: number) => {
-        if (!confirm("Opravdu chcete smazat tuto událost?")) return;
-        try {
-            setRemovingRow(index);
-            const res = await fetch("/api/content/remove", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ projectId, type: "timelineRow", blockIndex, index }),
-            });
-            if (res.ok) {
-                router.refresh();
-            } else {
-                alert("Nepodařilo se smazat událost.");
+    const handleRemoveRow = useCallback(async (index: number) => {
+        showConfirm({
+            title: "Opravdu chcete smazat tuto událost?",
+            onConfirm: async () => {
+                try {
+                    setRemovingRow(index);
+                    setItemsConfig(prev => prev.filter((_, i) => i !== index)); // Optimistic UI
+                    showToast("saving");
+                    
+                    const res = await fetch("/api/content/remove", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ projectId, type: "timelineRow", blockIndex, index }),
+                    });
+                    if (res.ok) {
+                        showToast("success");
+                        router.refresh();
+                    } else {
+                        showToast("error", "Nepodařilo se smazat událost.");
+                    }
+                } catch (error) {
+                    console.error(error);
+                    showToast("error", "Chyba při mazání události.");
+                } finally {
+                    setRemovingRow(null);
+                }
             }
-        } catch (error) {
-            console.error(error);
-            alert("Chyba při mazání události.");
-        } finally {
-            setRemovingRow(null);
-        }
-    };
+        });
+    }, [projectId, blockIndex, router, showConfirm, showToast]);
 
-    const handleRemoveImage = async (timelineIndex: number, imageIndex: number, url: string) => {
-        if (!confirm("Opravdu chcete smazat tento obrázek?")) return;
-        try {
-            setRemovingImage(`${timelineIndex}-${imageIndex}`);
-            // Also attempt to delete the physical file if it's stored on Supabase
-            if (url.includes("/storage/v1/object/public/media/")) {
-                await fetch("/api/upload", {
-                    method: "DELETE",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ url }),
-                });
-            }
+    const handleRemoveImage = useCallback(async (timelineIndex: number, imageIndex: number, url: string) => {
+        showConfirm({
+            title: "Opravdu chcete smazat tento obrázek?",
+            onConfirm: async () => {
+                try {
+                    setRemovingImage(`${timelineIndex}-${imageIndex}`);
+                    
+                    // Optimistic UI for image deletion
+                    setItemsConfig(prev => {
+                        const newItems = [...prev];
+                        newItems[timelineIndex] = {
+                            ...newItems[timelineIndex],
+                            images: newItems[timelineIndex].images.filter((_, i) => i !== imageIndex)
+                        };
+                        return newItems;
+                    });
 
-            const res = await fetch("/api/content/remove", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ projectId, type: "timelineImage", blockIndex, timelineIndex, imageIndex }),
-            });
-            if (res.ok) {
-                router.refresh();
-            } else {
-                alert("Nepodařilo se smazat obrázek.");
+                    // Also attempt to delete the physical file if it's stored on Supabase
+                    if (url.includes("/storage/v1/object/public/media/")) {
+                        await fetch("/api/upload", {
+                            method: "DELETE",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ url }),
+                        });
+                    }
+                    
+                    showToast("saving");
+
+                    const res = await fetch("/api/content/remove", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ projectId, type: "timelineImage", blockIndex, timelineIndex, imageIndex }),
+                    });
+                    if (res.ok) {
+                        showToast("success");
+                        router.refresh();
+                    } else {
+                        showToast("error", "Nepodařilo se smazat obrázek.");
+                    }
+                } catch (error) {
+                    console.error(error);
+                    showToast("error", "Chyba při mazání obrázku.");
+                } finally {
+                    setRemovingImage(null);
+                }
             }
-        } catch (error) {
-            console.error(error);
-            alert("Chyba při mazání obrázku.");
-        } finally {
-            setRemovingImage(null);
-        }
-    };
+        });
+    }, [projectId, blockIndex, router, showConfirm, showToast]);
 
     const handleAddImage = async (index: number) => {
         try {
             setIsAdding(index);
+            showToast("saving");
+            
             const res = await fetch("/api/content/add", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ projectId, type: "timelineImage", blockIndex, timelineIndex: index }),
             });
             if (res.ok) {
+                // To keep it perfectly optimistic without complex server emulation, router.refresh handles it cleanly if possible
+                showToast("success");
                 router.refresh();
             } else {
-                alert("Nepodařilo se přidat obrázek.");
+                showToast("error", "Nepodařilo se přidat obrázek.");
             }
         } catch (error) {
             console.error(error);
-            alert("Chyba při přidávání obrázku.");
+            showToast("error", "Chyba při přidávání obrázku.");
         } finally {
             setIsAdding(null);
         }
     };
 
-    if ((!items || items.length === 0) && !isEditMode) return null;
+    if ((!itemsConfig || itemsConfig.length === 0) && !isEditMode) return null;
 
     return (
         <section className={styles.timeline}>
@@ -211,7 +275,7 @@ export function Timeline({ items, projectId, blockIndex }: TimelineProps) {
             </div>
 
             <div className={styles.axis}>
-                {items.map((item, i) => (
+                {itemsConfig.map((item, i) => (
                     <div key={item.id} className={styles.node}>
                         {isEditMode && (
                             <button
@@ -226,7 +290,7 @@ export function Timeline({ items, projectId, blockIndex }: TimelineProps) {
                         {/* Vertical line */}
                         <div className={styles.lineContainer}>
                             <div
-                                className={`${styles.line} ${i === 0 ? styles.lineFirst : ""} ${i === items.length - 1 ? styles.lineLast : ""
+                                className={`${styles.line} ${i === 0 ? styles.lineFirst : ""} ${i === itemsConfig.length - 1 ? styles.lineLast : ""
                                     }`}
                             />
                             <div className={styles.dot} />
@@ -306,9 +370,9 @@ export function Timeline({ items, projectId, blockIndex }: TimelineProps) {
                 ))}
             </div>
 
-            {lightboxData !== null && items[lightboxData.eventIndex] && (
+            {lightboxData !== null && itemsConfig[lightboxData.eventIndex] && (
                 <Lightbox
-                    images={items[lightboxData.eventIndex].images.map((img) => ({ url: img.url, caption: img.caption }))}
+                    images={itemsConfig[lightboxData.eventIndex].images.map((img) => ({ url: img.url, caption: img.caption }))}
                     initialIndex={lightboxData.imageIndex}
                     onClose={() => setLightboxData(null)}
                     onIndexChange={(newIndex) => setLightboxData({ eventIndex: lightboxData.eventIndex, imageIndex: newIndex })}
