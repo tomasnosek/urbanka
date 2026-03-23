@@ -40,6 +40,9 @@ export function EditableText({
     const { showToast } = useToast();
     const router = useRouter();
     const [isSaving, setIsSaving] = useState(false);
+    const [localValue, setLocalValue] = useState<string | null>(null);
+
+    const displayValue = localValue ?? value;
 
     const handleBlur = useCallback(async () => {
         const el = ref.current;
@@ -50,7 +53,9 @@ export function EditableText({
             : el.textContent?.trim() ?? "";
 
         // Skip if unchanged
-        if (newValue === value) return;
+        if (newValue === displayValue) return;
+
+        setLocalValue(newValue);
 
         setIsSaving(true);
         try {
@@ -70,17 +75,19 @@ export function EditableText({
             } else {
                 console.error("Failed to save:", await res.text());
                 showToast("error", "Nepodařilo se uložit");
+                setLocalValue(null);
                 if (el) el.textContent = value;
             }
         } catch (err) {
             console.error("Save error:", err);
             showToast("error", "Chyba při ukládání");
+            setLocalValue(null);
             if (el) el.textContent = value;
         } finally {
             // Reset saving state after animation duration (800ms)
             setTimeout(() => setIsSaving(false), 800);
         }
-    }, [value, path, projectId, multiline, showToast, router]);
+    }, [displayValue, value, path, projectId, multiline, showToast, router]);
 
     const canEdit = isAdmin && isEditMode;
     const Component = Tag as any;
@@ -94,7 +101,7 @@ export function EditableText({
             onBlur={canEdit ? handleBlur : undefined}
             spellCheck={canEdit ? false : undefined}
         >
-            {value}
+            {displayValue}
         </Component>
     );
 }

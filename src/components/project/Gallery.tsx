@@ -4,8 +4,10 @@ import { TimelineImage } from "@/lib/types";
 import { EditableImage } from "@/components/editor/EditableImage";
 import { EditableText } from "@/components/editor/EditableText";
 import { useEditMode } from "@/components/editor/EditModeContext";
+import { useDialog } from "@/components/ui/DialogContext";
+import { useToast } from "@/components/ui/ToastContext";
 import { Lightbox } from "@/components/ui/Lightbox";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
     DndContext,
@@ -131,6 +133,8 @@ interface GalleryProps {
 export function Gallery({ images, projectId, blockIndex }: GalleryProps) {
     const { isEditMode } = useEditMode();
     const router = useRouter();
+    const { showConfirm } = useDialog();
+    const { showToast } = useToast();
     const [removingImage, setRemovingImage] = useState<number | null>(null);
     const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
@@ -170,12 +174,14 @@ export function Gallery({ images, projectId, blockIndex }: GalleryProps) {
         })
     );
 
-    const handleRemoveImage = async (index: number, url: string) => {
-        if (!confirm("Opravdu chcete smazat tento obrázek?")) return;
-        try {
-            setRemovingImage(index);
-            // Optimistically remove it from local state to hide it instantly
-            setItems(prev => prev.filter((_, i) => i !== index));
+    const handleRemoveImage = useCallback(async (index: number, url: string) => {
+        showConfirm({
+            title: "Opravdu chcete smazat tento obrázek?",
+            onConfirm: async () => {
+                try {
+                    setRemovingImage(index);
+                    // Optimistically remove it from local state to hide it instantly
+                    setItems(prev => prev.filter((_, i) => i !== index));
 
             // Attempt to delete physical file from Supabase
             if (url.includes("/storage/v1/object/public/media/")) {
@@ -198,17 +204,20 @@ export function Gallery({ images, projectId, blockIndex }: GalleryProps) {
                 }),
             });
             if (res.ok) {
+                showToast("success");
                 router.refresh();
             } else {
-                alert("Nepodařilo se smazat obrázek.");
+                showToast("error", "Nepodařilo se smazat obrázek.");
             }
-        } catch (error) {
-            console.error(error);
-            alert("Chyba při mazání obrázku.");
-        } finally {
-            setRemovingImage(null);
-        }
-    };
+                } catch (error) {
+                    console.error(error);
+                    showToast("error", "Chyba při mazání obrázku.");
+                } finally {
+                    setRemovingImage(null);
+                }
+            }
+        });
+    }, [projectId, blockIndex, router, showConfirm, showToast]);
 
     const handleDragEnd = async (event: DragEndEvent) => {
         const { active, over } = event;
@@ -218,7 +227,9 @@ export function Gallery({ images, projectId, blockIndex }: GalleryProps) {
             const newIndex = items.findIndex((item) => item.id === over?.id);
 
             // Optimistic UI update
-            setItems((items) => arrayMove(items, oldIndex, newIndex));
+            const newStats = arrayMove(items, oldIndex, newIndex);
+            setItems(newStats); // Optimistic UI
+            showToast("saving");
 
             // Call API
             try {
@@ -233,13 +244,18 @@ export function Gallery({ images, projectId, blockIndex }: GalleryProps) {
                     }),
                 });
                 
-                if (!res.ok) {
-                    alert("Nepodařilo se uložit nové pořadí galerie.");
-                    // In a real prod app, you might rollback the optimistic state here
+                if (res.ok) {
+                    showToast("success");
+                    router.refresh();
+                } else {
+                    showToast("error", "Nepodařilo se přesunout fotku.");
+                    // Sync back on error
+                    setItems(images ? images.map((img, i) => ({ id: img.id || `img-${i}`, url: img.url, caption: img.caption })) : []);
                 }
             } catch (error) {
                 console.error(error);
-                alert("Chyba při ukládání pořadí. Zkuste to znovu.");
+                showToast("error", "Chyba při přesouvání úseku.");
+                setItems(images ? images.map((img, i) => ({ id: img.id || `img-${i}`, url: img.url, caption: img.caption })) : []);
             }
         }
     };

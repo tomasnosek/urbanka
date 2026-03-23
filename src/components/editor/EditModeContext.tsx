@@ -5,6 +5,7 @@
 "use client";
 
 import { createContext, useContext, useState, type ReactNode } from "react";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 interface EditModeContextType {
     isEditMode: boolean;
@@ -22,12 +23,17 @@ export function useEditMode() {
 
 export function EditModeProvider({ children }: { children: ReactNode }) {
     const [isEditMode, setIsEditMode] = useState(false);
+    const { isAdmin } = useAuth();
 
     return (
         <EditModeContext.Provider
             value={{
-                isEditMode,
-                toggleEditMode: () => setIsEditMode((prev) => !prev),
+                isEditMode: isEditMode && isAdmin,
+                toggleEditMode: () => {
+                    if (isAdmin) {
+                        setIsEditMode((prev) => !prev);
+                    }
+                },
             }}
         >
             {children}

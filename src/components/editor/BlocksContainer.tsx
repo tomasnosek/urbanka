@@ -87,6 +87,23 @@ const BLOCK_REGISTRY: Record<string, {
             <MayorSection block={data} projectId={projectId} blockIndex={blockIndex} />
         ),
     },
+    loading: {
+        wrapper: "layout-wrap",
+        render: () => (
+            <div style={{ 
+                display: "flex", 
+                alignItems: "center", 
+                justifyContent: "center", 
+                minHeight: "200px", 
+                border: "2px dashed var(--color-slate-300)", 
+                borderRadius: "16px",
+                color: "var(--color-slate-400)",
+                animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite"
+            }}>
+                Vytvářím sekci...
+            </div>
+        )
+    }
 };
 
 export function BlocksContainer({ initialBlocks, meta, projectId, projectTitle, publicStatus, updatedAt }: BlocksContainerProps) {
@@ -100,6 +117,23 @@ export function BlocksContainer({ initialBlocks, meta, projectId, projectTitle, 
         if (isOperating.current) return;
         setBlocks(initialBlocks);
     }, [JSON.stringify(initialBlocks)]);
+
+    useEffect(() => {
+        const handleOptimisticAdd = () => {
+            setBlocks(prev => [...prev.filter(b => b.id !== 'temp-loading'), { id: 'temp-loading', type: 'loading', data: null }]);
+        };
+        const handleOptimisticError = () => {
+            setBlocks(prev => prev.filter(b => b.id !== 'temp-loading'));
+        };
+
+        window.addEventListener("optimistic-add-block", handleOptimisticAdd);
+        window.addEventListener("optimistic-add-error", handleOptimisticError);
+
+        return () => {
+            window.removeEventListener("optimistic-add-block", handleOptimisticAdd);
+            window.removeEventListener("optimistic-add-error", handleOptimisticError);
+        }
+    }, []);
 
     const handleMove = useCallback(async (blockIndex: number, direction: "up" | "down") => {
         const newIndex = direction === "up" ? blockIndex - 1 : blockIndex + 1;
