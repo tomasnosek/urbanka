@@ -136,6 +136,8 @@ export async function PATCH(request: NextRequest) {
                 );
             }
             titleUpdated = true;
+            // Store the new slug so we can return it
+            (request as any).newSlug = slug;
         } else {
             // Generic JSONB content update
             const pathParts = path.split(".");
@@ -172,7 +174,10 @@ export async function PATCH(request: NextRequest) {
             }
         }
 
-        return NextResponse.json({ success: true });
+        return NextResponse.json({ 
+            success: true, 
+            newSlug: titleUpdated ? (request as any).newSlug : undefined 
+        });
     } catch (err) {
         console.error("Content PATCH error:", err);
         return NextResponse.json(
