@@ -70,8 +70,24 @@ export function EditableText({
             });
 
             if (res.ok) {
+                const data = await res.json();
                 showToast("success");
-                router.refresh();
+                
+                if (data.newSlug) {
+                    // Title change resulted in a slug change, redirect to new URL
+                    const parts = window.location.pathname.split('/');
+                    const currentSlug = parts[parts.length - 1];
+                    
+                    if (parts.length >= 3 && currentSlug !== data.newSlug) {
+                        parts[parts.length - 1] = data.newSlug;
+                        const newUrl = parts.join('/') + window.location.search + window.location.hash;
+                        router.replace(newUrl);
+                    } else {
+                        router.refresh(); // Same slug, just refresh
+                    }
+                } else {
+                    router.refresh();
+                }
             } else {
                 console.error("Failed to save:", await res.text());
                 showToast("error", "Nepodařilo se uložit");
